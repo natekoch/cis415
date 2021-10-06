@@ -14,7 +14,7 @@
 #define STRING_PARSER_H_
 
 
-#define _GUN_SOURCE
+#define _GNU_SOURCE
 
 
 typedef struct
