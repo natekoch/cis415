@@ -25,12 +25,15 @@ int count_token (char* buf, const char* delim)
 	*			c.	account NULL for the last token
 	*	#3. return the number of token (note not number of delimeter)
 	*/
-    char *token;
+    char *cp_buf, *rem;
     int count = 0;
-
-    while ((token = strtok_r(buf, delim, &buf))) {
+    cp_buf = (char *) malloc(sizeof(buf));
+    strcpy(cp_buf, buf);
+    rem = cp_buf;
+    while ((strtok_r(rem, delim, &rem))) {
         count++;
     }
+    free(cp_buf);
     return count;
 }
 
@@ -48,21 +51,23 @@ command_line str_filler (char* buf, const char* delim)
 	*			fill command_list array with tokens, and fill last spot with NULL.
 	*	#6. return the variable.
 	*/
-    char *large, *small;
+    char *large, *small, *rem, *cp_buf;
     command_line *command;
     command = (command_line*)malloc(sizeof(command_line));
-
-    large = strtok_r(buf, "\n", &buf);
+    cp_buf = (char *) malloc(sizeof(buf));
+    strcpy(cp_buf, buf);
+    rem = cp_buf;
+    large = strtok_r(rem, "\n", &rem);
     command->num_token = count_token(large, delim);
 
-    command->command_list = (char **)malloc(sizeof(char*)*command->num_token);
+    command->command_list = (char**)malloc(sizeof(char*)*command->num_token);
 
     for (int i = 0; i < command->num_token; i++) {
         small = strtok_r(large, delim, &large);
-        command->command_list[i] = malloc(sizeof(char)*sizeof(small));
+        command->command_list[i] = (char*)malloc(sizeof(char)*sizeof(small));
         command->command_list[i] = small;
     }
-
+    free(cp_buf);
     return *command;
 }
 
@@ -77,5 +82,7 @@ void free_command_line(command_line* command)
         free(command->command_list[i]);
     }
     free(command->command_list);
+    command->command_list = NULL;
     free(command);
+    command = NULL;
 }
