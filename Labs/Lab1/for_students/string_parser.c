@@ -15,7 +15,6 @@
 
 int count_token (char* buf, const char* delim)
 {
-	//TODO：
 	/*
 	*	#1.	Check for NULL string
 	*	#2.	iterate through string counting tokens
@@ -25,21 +24,34 @@ int count_token (char* buf, const char* delim)
 	*			c.	account NULL for the last token
 	*	#3. return the number of token (note not number of delimeter)
 	*/
-    char *cp_buf, *rem;
+
     int count = 0;
-    cp_buf = (char *) malloc(sizeof(buf));
-    strcpy(cp_buf, buf);
-    rem = cp_buf;
-    while ((strtok_r(rem, delim, &rem))) {
-        count++;
+
+    //check for NULL string
+    if (buf == NULL)
+        return count;
+
+    //iterate through string counting tokens
+    for (int i = 0; i < strlen(buf); i++) {
+        if (buf[i] == *delim) {
+            count++;
+        }
     }
-    free(cp_buf);
+    /* SPECIAL CASES */
+    // acount for NULL token
+    count++;
+    // delim at beginning of string
+    if (buf[0] == *delim)
+        count--;
+    // delim at the end of string
+    if (buf[strlen(buf)-1] == *delim)
+        count--;
+
     return count;
 }
 
 command_line str_filler (char* buf, const char* delim)
 {
-	//TODO：
 	/*
 	*	#1.	create command_line variable to be filled and returned
 	*	#2.	count the number of tokens with count_token function, set num_token. 
@@ -51,21 +63,33 @@ command_line str_filler (char* buf, const char* delim)
 	*			fill command_list array with tokens, and fill last spot with NULL.
 	*	#6. return the variable.
 	*/
-    char *large, *small, *rem, *cp_buf;
+
+    char *large, *small;
+    char *cp_buf;
+    char *saveptr1, *saveptr2;
+
+    // create command_line variable to be filled
     command_line *command;
-    command = (command_line*)malloc(sizeof(command_line));
-    cp_buf = (char *) malloc(sizeof(buf));
-    strcpy(cp_buf, buf);
-    rem = cp_buf;
-    large = strtok_r(rem, "\n", &rem);
+    command = malloc(sizeof(command_line));
+
+    cp_buf = strdup(buf);
+    // remove newline character at end of line
+    large = strtok_r(cp_buf, "\n", &saveptr1);
+    // get number of tokens in the string
     command->num_token = count_token(large, delim);
-
-    command->command_list = (char**)malloc(sizeof(char*)*command->num_token);
-
-    for (int i = 0; i < command->num_token; i++) {
-        small = strtok_r(large, delim, &large);
-        command->command_list[i] = (char*)malloc(sizeof(char)*sizeof(small));
-        command->command_list[i] = small;
+    // malloc the array of tokens by the number of tokens
+    command->command_list = malloc(sizeof(char*)*(command->num_token+1));
+    // iterate through array to add in the tokens
+    for (int i = 0; i <= command->num_token; i++, large = NULL) {
+        // find out the tokens
+        small = strtok_r(large, delim, &saveptr2);
+        if (small == NULL) {
+            // set the last index to NULL
+            command->command_list[i] = '\0';
+            break;
+        }
+        // allocated and add the tokens to each index
+        command->command_list[i] = strdup(small);
     }
     free(cp_buf);
     return *command;
@@ -74,7 +98,6 @@ command_line str_filler (char* buf, const char* delim)
 
 void free_command_line(command_line* command)
 {
-	//TODO：
 	/*
 	*	#1.	free the array base num_token
 	*/
@@ -82,7 +105,5 @@ void free_command_line(command_line* command)
         free(command->command_list[i]);
     }
     free(command->command_list);
-    command->command_list = NULL;
-    free(command);
-    command = NULL;
+    //command->command_list = NULL;
 }
