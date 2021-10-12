@@ -27,5 +27,26 @@ void lfcat() {
 
     write(1, "<<In lfcat(): Step-02: Listing all files in current dir.\n", 57);
 
+    int fname_len = 0;
+    while((de = readdir(dr)) != NULL) {
+        write(1, "File: ", 6);
+        write(1, de->d_name, strlen(de->d_name));
+        write(1, "\n", 1);
+
+        FILE *currFPtr;
+        currFPtr = fopen (de->d_name, "r");
+
+        //declare line_buffer
+        size_t len = 512;
+        char* line_buf = malloc (len);
+
+        while (getline (&line_buf, &len, currFPtr) != -1) {
+            write(1, line_buf, strlen(line_buf));
+        }
+        write(1, "\n--------------------------------------------------------------------------------\n", 82);
+        fclose(currFPtr);
+        free(line_buf);
+    }
+
     closedir(dr);
 }
