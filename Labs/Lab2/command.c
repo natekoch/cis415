@@ -27,8 +27,17 @@ void lfcat() {
 
     write(1, "<<In lfcat(): Step-02: Listing all files in current dir.\n", 57);
 
+    FILE *FPout = freopen("output.txt", "a+", stdout);
+
     int fname_len = 0;
     while((de = readdir(dr)) != NULL) {
+        if (strcmp(de->d_name, ".") == 0 ||
+            strcmp(de->d_name, "..") == 0 ||
+            strcmp(de->d_name, "lab2") == 0 ||
+            strcmp(de->d_name, "output.txt") == 0) {
+            continue;
+        }
+
         write(1, "File: ", 6);
         write(1, de->d_name, strlen(de->d_name));
         write(1, "\n", 1);
@@ -49,4 +58,5 @@ void lfcat() {
     }
 
     closedir(dr);
+    fclose(FPout);
 }
