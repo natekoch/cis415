@@ -1,14 +1,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
 #include "command.h"
 
-int main(int argc, char const *argv[]) {
+int main(int argc, char const** argv) {
+    (void)argc;
+    (void)argv;
+
     //declare line_buffer
     size_t len = 128;
     char* line_buf = malloc (len);
-
-    char sub_line[128];
 
     //loop until the file is over
     write(1, ">>> ", 4);

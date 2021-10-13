@@ -7,7 +7,7 @@ lab2: $(OBJECTS)
 
 main.o: main.c
 
-command.o: command.c
+command.o: command.c command.h
 
 clean:
 	rm -f $(OBJECTS) $(PROGRAMS)
