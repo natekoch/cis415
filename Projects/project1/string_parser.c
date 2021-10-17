@@ -32,7 +32,7 @@ int count_token (char* buf, const char* delim)
         return count;
 
     //iterate through string counting tokens
-    for (int i = 0; i < strlen(buf); i++) {
+    for (unsigned long i = 0; i < strlen(buf); i++) {
         if (buf[i] == *delim) {
             count++;
         }
@@ -85,7 +85,7 @@ command_line str_filler (char* buf, const char* delim)
         small = strtok_r(large, delim, &saveptr2);
         if (small == NULL) {
             // set the last index to NULL
-            command->command_list[i] = '\0';
+            command->command_list[i] = NULL;
             break;
         }
         // allocated and add the tokens to each index

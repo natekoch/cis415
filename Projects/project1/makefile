@@ -1,18 +1,14 @@
+CC=gcc
 CFLAGS=-g -W -Wall
-OBJECTS=main.o command.o string_parser.o
-PROGRAMS=pseudo-shell
+DEPS = string_parser.h command.h
+OBJECTS = main.o string_parser.o command.o
+PROGRAMS = pseudo-shell
+
+%.o: %.c $(DEPS)
+	$(CC) -c -o $@ $< $(CFLAGS)
 
 pseudo-shell: $(OBJECTS)
-	gcc -o $@ $(OBJECTS)
-
-main.o: main.c
-	gcc -c main.c
-
-command.o: command.c
-	gcc -c command.c
-
-string_parser.o: string_parser.c string_parser.h
-	gcc -c string_parser.c
+	$(CC) -o $@ $^ $(CFLAGS)
 
 clean:
 	rm -f $(OBJECTS) $(PROGRAMS)
