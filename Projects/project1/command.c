@@ -24,13 +24,12 @@ void listDir() {
 
     while((de = readdir(dr)) != NULL) {
         write(1, de->d_name, strlen(de->d_name));
-        write(1, "\n", 1);
+        write(1, " ", 1);
     }
-
+    write(1, "\n", 1);
     closedir(dr);
     free(currentDir);
 } /*for the ls command*/
-
 
 void showCurrentDir() {
     char *cwd = NULL;
@@ -42,34 +41,82 @@ void showCurrentDir() {
 } /*for the pwd command*/
 
 void makeDir(char *dirName) {
-    mkdir(dirName, S_IRWXU);
+    if (mkdir(dirName, S_IRWXU) == -1) {
+        write(1, strerror(errno), strlen(strerror(errno)));
+        write(1, "\n", 1);
+    }
 } /*for the mkdir command*/
 
 void changeDir(char *dirName) {
-    chdir(dirName);
+    if (chdir(dirName) == -1) {
+        write(1, strerror(errno), strlen(strerror(errno)));
+        write(1, "\n", 1);
+    }
 } /*for the cd command*/
 
 void copyFile(char *sourcePath, char *destinationPath) {
+    char line_buf[1024];
+    ssize_t  count;
+    int fd_read = open(sourcePath, O_RDONLY);
+    if (fd_read == -1) {
+        write(1, strerror(errno), strlen(strerror(errno)));
+        write(1, "\n", 1);
+    }
+    int fd_write = open(destinationPath, O_CREAT | O_WRONLY, 0666);
 
+    while ((count = read(fd_read, line_buf,  1024)) > 0) {
+        write(fd_write, line_buf, count);
+        write(1, strerror(errno), strlen(strerror(errno)));
+    }
+
+    close(fd_read);
+    close(fd_write);
 } /*for the cp command*/
 
 void moveFile(char *sourcePath, char *destinationPath) {
+    char line_buf[1024];
+    ssize_t  count;
 
+    int fd_read = open(sourcePath, O_RDONLY);
+    if (fd_read == -1) {
+        write(1, strerror(errno), strlen(strerror(errno)));
+        write(1, "\n", 1);
+    }
+    int fd_write = open(destinationPath, O_CREAT | O_WRONLY, 0666);
+    if (fd_write == -1) {
+        write(1, strerror(errno), strlen(strerror(errno)));
+        write(1, "\n", 1);
+    }
+
+    while ((count = read(fd_read, line_buf,  1024)) > 0) {
+        write(fd_write, line_buf, count);
+        write(1, strerror(errno), strlen(strerror(errno)));
+    }
+
+    close(fd_read);
+    close(fd_write);
+
+    unlink(sourcePath);
 } /*for the mv command*/
 
 void deleteFile(char *filename) {
-
+    if (unlink(filename) == -1) {
+        write(1, strerror(errno), strlen(strerror(errno)));
+        write(1, "\n", 1);
+    }
 } /*for the rm command*/
 
 void displayFile(char *filename) {
     int fd;
     fd = open(filename, O_RDONLY);
-    char *line_buf;
+    if (fd == -1) {
+        write(1, strerror(errno), strlen(strerror(errno)));
+        write(1, "\n", 1);
+    }
+    char line_buf[1024];
     ssize_t  count;
-    line_buf = malloc(1024);
     while ((count = read(fd, line_buf, 1024)) > 0) {
         write(1, line_buf, count);
     }
-    free(line_buf);
     close(fd);
 } /*for the cat command*/

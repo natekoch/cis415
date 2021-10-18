@@ -4,10 +4,13 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <errno.h>
+#include <sys/stat.h>
 #include "command.h"
 #include "string_parser.h"
 
 int main(int argc, char *argv[]) {
+    FILE *FPout = NULL;
+
     bool filemode_on = false;
     if (argc == 1) {
         filemode_on = false;
@@ -34,22 +37,28 @@ int main(int argc, char *argv[]) {
     size_t len = 512;
     char* line_buf = malloc (len);
 
-    FILE *FPin;
+    FILE *FPin = NULL;
     if (filemode_on) {
+        FPout = freopen("output.txt", "w+", stdout);
         FPin = fopen(argv[2], "r");
         if (FPin == NULL)
             write(1, strerror(errno), strlen(strerror(errno)));
+            write(1, "\n", 1);
+            free(line_buf);
+            fclose(FPout);
+            exit(EXIT_FAILURE);
     } else {
         FPin = stdin;
     }
 
     command_line large_token_buffer;
     command_line small_token_buffer;
+    command_line tiny_token_buffer;
 
     //loop until the file is over
     if (!filemode_on)
         write(1, ">>> ", 4);
-    while (getline (&line_buf, &len, stdin) != -1) {
+    while (getline (&line_buf, &len, FPin) != -1) {
         large_token_buffer = str_filler(line_buf, ";");
 
         for (int i = 0; large_token_buffer.command_list[i] != NULL; i++) {
@@ -58,19 +67,26 @@ int main(int argc, char *argv[]) {
             for (int j = 0; small_token_buffer.command_list[j] != NULL; j++) {
                 if (strcmp(small_token_buffer.command_list[j], "ls") == 0) {
                     // args 0
-                    listDir();
+                    if (small_token_buffer.command_list[j+1] == NULL) {
+                        listDir();
+                    } else {
+                        write(1, "Error! Unsupported parameters for command: ls\n", 46);
+                    }
                     break;
                 } else if (strcmp(small_token_buffer.command_list[j], "pwd") == 0) {
                     // args 0
-                    showCurrentDir();
+                    if (small_token_buffer.command_list[j+1] == NULL) {
+                        showCurrentDir();
+                    } else {
+                        write(1, "Error! Unsupported parameters for command: pwd\n", 47);
+                    }
                     break;
                 } else if (strcmp(small_token_buffer.command_list[j], "mkdir") == 0) {
                     // args 1
                     if (small_token_buffer.command_list[j+1] != NULL) {
                         makeDir(small_token_buffer.command_list[j + 1]);
-
                     } else {
-                        write(1, "Invalid args: mkdir requires 1 argument for dir name\n", 53);
+                        write(1, "Error! Unsupported parameters for command: mkdir\n", 49);
                     }
                     break;
                 } else if (strcmp(small_token_buffer.command_list[j], "cd") == 0) {
@@ -78,35 +94,57 @@ int main(int argc, char *argv[]) {
                     if (small_token_buffer.command_list[j+1] != NULL) {
                         changeDir(small_token_buffer.command_list[j + 1]);
                     } else {
-                        write(1, "Invalid args: cd requires 1 argument for dir name\n", 50);
+                        write(1, "Error! Unsupported parameters for command: cd\n", 46);
                     }
                     break;
                 } else if (strcmp(small_token_buffer.command_list[j], "cp") == 0) {
                     // args 2
                     if (small_token_buffer.command_list[j+1] != NULL &&
                         small_token_buffer.command_list[j+2] != NULL) {
+                        tiny_token_buffer = str_filler(small_token_buffer.command_list[j+1], "/");
+                        struct stat s;
+                        if (stat(small_token_buffer.command_list[j+2], &s) == 0) {
+                            if (s.st_mode & S_IFDIR) {
+                                strcat(small_token_buffer.command_list[j+2], "/");
+                                strcat(small_token_buffer.command_list[j+2],
+                                       tiny_token_buffer.command_list[tiny_token_buffer.num_token-1]);
+                            }
+                        }
                         copyFile(small_token_buffer.command_list[j+1],
                                  small_token_buffer.command_list[j+2]);
                     } else {
-                        write(1, "Invalid args: cp requires 2 arguments src and dest\n", 51);
+                        write(1, "Error! Unsupported parameters for command: cp\n", 46);
                     }
+                    free_command_line(&tiny_token_buffer);
+                    memset (&tiny_token_buffer, 0, 0);
                     break;
                 } else if (strcmp(small_token_buffer.command_list[j], "mv") == 0) {
                     // args 2
                     if (small_token_buffer.command_list[j+1] != NULL &&
                         small_token_buffer.command_list[j+2] != NULL) {
+                        tiny_token_buffer = str_filler(small_token_buffer.command_list[j+1], "/");
+                        struct stat s;
+                        if (stat(small_token_buffer.command_list[j+2], &s) == 0) {
+                            if (s.st_mode & S_IFDIR) {
+                                strcat(small_token_buffer.command_list[j+2], "/");
+                                strcat(small_token_buffer.command_list[j+2],
+                                       tiny_token_buffer.command_list[tiny_token_buffer.num_token-1]);
+                            }
+                        }
                         moveFile(small_token_buffer.command_list[j+1],
                                  small_token_buffer.command_list[j+2]);
                     } else {
-                        write(1, "Invalid args: mv requires 2 arguments src and dest\n", 51);
+                        write(1, "Error! Unsupported parameters for command: mv\n", 46);
                     }
+                    free_command_line(&tiny_token_buffer);
+                    memset (&tiny_token_buffer, 0, 0);
                     break;
                 } else if (strcmp(small_token_buffer.command_list[j], "rm") == 0) {
                     // args 1
                     if (small_token_buffer.command_list[j+1] != NULL) {
                         deleteFile(small_token_buffer.command_list[j + 1]);
                     } else {
-                        write(1, "Invalid args: rm requires 1 argument for file name\n", 51);
+                        write(1, "Error! Unsupported parameters for command: rm\n", 46);
                     }
                     break;
                 } else if (strcmp(small_token_buffer.command_list[j], "cat") == 0) {
@@ -114,13 +152,15 @@ int main(int argc, char *argv[]) {
                     if (small_token_buffer.command_list[j+1] != NULL) {
                         displayFile(small_token_buffer.command_list[j + 1]);
                     } else {
-                        write(1, "Invalid args: cat requires 1 argument for file name\n", 52);
+                        write(1, "Error! Unsupported parameters for command: cat\n", 47);
                     }
                     break;
                 } else if (strcmp(small_token_buffer.command_list[j], "exit") == 0) {
                     exit(EXIT_SUCCESS);
                 } else {
-                    write(1, "Error: Unrecognized command!\n", 29);
+                    write(1, "Error! Unrecognized command:", 28);
+                    write(1, small_token_buffer.command_list[j], strlen(small_token_buffer.command_list[j]));
+                    write(1, "\n", 1);
                     break;
                 }
             }
@@ -129,15 +169,15 @@ int main(int argc, char *argv[]) {
         }
         if (!filemode_on)
             write(1, ">>> ", 4);
-
         free_command_line(&large_token_buffer);
         memset (&large_token_buffer, 0, 0);
     }
-    free(line_buf);
 
-    if (FPin != stdin) {
-        free(FPin);
-    }
+    free(line_buf);
+    if (FPin != stdin && FPin != NULL)
+        fclose(FPin);
+    if (filemode_on && FPout != NULL)
+        fclose(FPout);
 
     exit(EXIT_SUCCESS);
 }
