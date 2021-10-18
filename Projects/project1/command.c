@@ -114,6 +114,7 @@ void displayFile(char *filename) {
     if (fd == -1) {
         write(1, strerror(errno), strlen(strerror(errno)));
         write(1, "\n", 1);
+        return;
     }
     char line_buf[1024];
     ssize_t  count;

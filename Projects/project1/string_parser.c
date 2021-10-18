@@ -69,30 +69,30 @@ command_line str_filler (char* buf, const char* delim)
     char *saveptr1, *saveptr2;
 
     // create command_line variable to be filled
-    command_line *command;
-    command = malloc(sizeof(command_line));
+    command_line command;
+    //command = malloc(sizeof(command_line));
 
     cp_buf = strdup(buf);
     // remove newline character at end of line
     large = strtok_r(cp_buf, "\n", &saveptr1);
     // get number of tokens in the string
-    command->num_token = count_token(large, delim);
+    command.num_token = count_token(large, delim);
     // malloc the array of tokens by the number of tokens
-    command->command_list = malloc(sizeof(char*)*(command->num_token+1));
+    command.command_list = malloc(sizeof(char*)*(command.num_token+1));
     // iterate through array to add in the tokens
-    for (int i = 0; i <= command->num_token; i++, large = NULL) {
+    for (int i = 0; i <= command.num_token; i++, large = NULL) {
         // find out the tokens
         small = strtok_r(large, delim, &saveptr2);
         if (small == NULL) {
             // set the last index to NULL
-            command->command_list[i] = NULL;
+            command.command_list[i] = NULL;
             break;
         }
         // allocated and add the tokens to each index
-        command->command_list[i] = strdup(small);
+        command.command_list[i] = strdup(small);
     }
     free(cp_buf);
-    return *command;
+    return command;
 }
 
 
