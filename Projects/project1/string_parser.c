@@ -70,7 +70,6 @@ command_line str_filler (char* buf, const char* delim)
 
     // create command_line variable to be filled
     command_line command;
-    //command = malloc(sizeof(command_line));
 
     cp_buf = strdup(buf);
     // remove newline character at end of line

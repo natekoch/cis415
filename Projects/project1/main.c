@@ -9,8 +9,7 @@
 #include "string_parser.h"
 
 int main(int argc, char *argv[]) {
-    FILE *FPout = NULL;
-
+    // handle arguments and files passed through argv at runtime
     bool filemode_on = false;
     if (argc == 1) {
         filemode_on = false;
@@ -33,11 +32,13 @@ int main(int argc, char *argv[]) {
         write(1, "Too many arguments\n", 19);
     }
 
-    //declare line_buffer
+    //declare line_buffer for reading from file
     size_t len = 512;
     char* line_buf = malloc (len);
 
+    // handle what the input file is and output stream
     FILE *FPin = NULL;
+    FILE *FPout = NULL;
     if (filemode_on) {
         FPout = freopen("output.txt", "w+", stdout);
         FPin = fopen(argv[2], "r");
@@ -51,7 +52,7 @@ int main(int argc, char *argv[]) {
     } else {
         FPin = stdin;
     }
-
+    // declare command_line buffers
     command_line large_token_buffer;
     command_line small_token_buffer;
     command_line tiny_token_buffer;
@@ -62,9 +63,11 @@ int main(int argc, char *argv[]) {
     if (!filemode_on)
         write(1, ">>> ", 4);
     while (getline (&line_buf, &len, FPin) != -1) {
+        // separate line by ;
         large_token_buffer = str_filler(line_buf, ";");
 
         for (int i = 0; large_token_buffer.command_list[i] != NULL; i++) {
+            // separate line by " "
             small_token_buffer = str_filler(large_token_buffer.command_list[i], " ");
 
             for (int j = 0; small_token_buffer.command_list[j] != NULL; j++) {
@@ -104,12 +107,14 @@ int main(int argc, char *argv[]) {
                     // args 2
                     if (small_token_buffer.command_list[j+1] != NULL &&
                         small_token_buffer.command_list[j+2] != NULL) {
+                        // get just the file name from the source path
                         tiny_token_buffer = str_filler(small_token_buffer.command_list[j+1], "/");
                         struct stat s;
                         if (stat(small_token_buffer.command_list[j+2], &s) == 0) {
                             if (s.st_mode & S_IFDIR) {
                                 destPath = malloc(strlen(small_token_buffer.command_list[j+1]) +
                                         strlen(small_token_buffer.command_list[j+2]));
+                                // add file name to the destination path
                                 strcpy(destPath, small_token_buffer.command_list[j+2]);
                                 strcat(destPath, "/");
                                 strcat(destPath,
@@ -125,6 +130,7 @@ int main(int argc, char *argv[]) {
                     } else {
                         write(1, "Error! Unsupported parameters for command: cp\n", 46);
                     }
+                    // free the command line and set memory to 0
                     free_command_line(&tiny_token_buffer);
                     memset (&tiny_token_buffer, 0, 0);
                     break;
@@ -132,12 +138,14 @@ int main(int argc, char *argv[]) {
                     // args 2
                     if (small_token_buffer.command_list[j+1] != NULL &&
                         small_token_buffer.command_list[j+2] != NULL) {
+                        // get just the file name from the source path
                         tiny_token_buffer = str_filler(small_token_buffer.command_list[j+1], "/");
                         struct stat s;
                         if (stat(small_token_buffer.command_list[j+2], &s) == 0) {
                             if (s.st_mode & S_IFDIR) {
                                 destPath = malloc(strlen(small_token_buffer.command_list[j+1]) +
                                                   strlen(small_token_buffer.command_list[j+2]));
+                                // add file name to the destination path
                                 strcpy(destPath, small_token_buffer.command_list[j+2]);
                                 strcat(destPath, "/");
                                 strcat(destPath,
@@ -153,6 +161,7 @@ int main(int argc, char *argv[]) {
                     } else {
                         write(1, "Error! Unsupported parameters for command: mv\n", 46);
                     }
+                    // free the command line and set memory to 0
                     free_command_line(&tiny_token_buffer);
                     memset (&tiny_token_buffer, 0, 0);
                     break;
@@ -173,29 +182,36 @@ int main(int argc, char *argv[]) {
                     }
                     break;
                 } else if (strcmp(small_token_buffer.command_list[j], "exit") == 0) {
+                    // exit the shell
                     exit(EXIT_SUCCESS);
                 } else {
+                    // default option for unrecognized commands given
                     write(1, "Error! Unrecognized command:", 28);
                     write(1, small_token_buffer.command_list[j], strlen(small_token_buffer.command_list[j]));
                     write(1, "\n", 1);
                     break;
                 }
             }
+            // free the command line and set memory to 0
             free_command_line(&small_token_buffer);
             memset (&small_token_buffer, 0, 0);
         }
         if (!filemode_on)
             write(1, ">>> ", 4);
+        // free the command line and set memory to 0
         free_command_line(&large_token_buffer);
         memset (&large_token_buffer, 0, 0);
     }
 
+    // free and close memory and files respectively
     free(line_buf);
     if (FPin != stdin && FPin != NULL)
         fclose(FPin);
     if (filemode_on && FPout != NULL)
         fclose(FPout);
 
+    // exit here runs for when in filemode with no exit called
+    // and EOF is reached
     exit(EXIT_SUCCESS);
 }
 
