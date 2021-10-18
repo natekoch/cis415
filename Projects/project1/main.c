@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
     if (!filemode_on)
         write(1, ">>> ", 4);
     while (getline (&line_buf, &len, FPin) != -1) {
-        // separate line by ;
+        // separate line by ";"
         large_token_buffer = str_filler(line_buf, ";");
 
         for (int i = 0; large_token_buffer.command_list[i] != NULL; i++) {
