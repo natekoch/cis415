@@ -61,6 +61,7 @@ void copyFile(char *sourcePath, char *destinationPath) {
     if (fd_read == -1) {
         write(1, strerror(errno), strlen(strerror(errno)));
         write(1, "\n", 1);
+        return;
     }
     int fd_write = open(destinationPath, O_CREAT | O_WRONLY, 0666);
 
@@ -81,6 +82,7 @@ void moveFile(char *sourcePath, char *destinationPath) {
     if (fd_read == -1) {
         write(1, strerror(errno), strlen(strerror(errno)));
         write(1, "\n", 1);
+        return;
     }
     int fd_write = open(destinationPath, O_CREAT | O_WRONLY, 0666);
     if (fd_write == -1) {

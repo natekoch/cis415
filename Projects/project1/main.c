@@ -41,12 +41,13 @@ int main(int argc, char *argv[]) {
     if (filemode_on) {
         FPout = freopen("output.txt", "w+", stdout);
         FPin = fopen(argv[2], "r");
-        if (FPin == NULL)
+        if (FPin == NULL) {
             write(1, strerror(errno), strlen(strerror(errno)));
             write(1, "\n", 1);
             free(line_buf);
             fclose(FPout);
             exit(EXIT_FAILURE);
+        }
     } else {
         FPin = stdin;
     }
@@ -54,6 +55,8 @@ int main(int argc, char *argv[]) {
     command_line large_token_buffer;
     command_line small_token_buffer;
     command_line tiny_token_buffer;
+
+    char *destPath = NULL;
 
     //loop until the file is over
     if (!filemode_on)
@@ -105,13 +108,20 @@ int main(int argc, char *argv[]) {
                         struct stat s;
                         if (stat(small_token_buffer.command_list[j+2], &s) == 0) {
                             if (s.st_mode & S_IFDIR) {
-                                strcat(small_token_buffer.command_list[j+2], "/");
-                                strcat(small_token_buffer.command_list[j+2],
+                                destPath = malloc(strlen(small_token_buffer.command_list[j+1]) +
+                                        strlen(small_token_buffer.command_list[j+2]));
+                                strcpy(destPath, small_token_buffer.command_list[j+2]);
+                                strcat(destPath, "/");
+                                strcat(destPath,
                                        tiny_token_buffer.command_list[tiny_token_buffer.num_token-1]);
+                                copyFile(small_token_buffer.command_list[j+1],
+                                         destPath);
+                                free(destPath);
+                            } else {
+                                copyFile(small_token_buffer.command_list[j+1],
+                                         small_token_buffer.command_list[j+2]);
                             }
                         }
-                        copyFile(small_token_buffer.command_list[j+1],
-                                 small_token_buffer.command_list[j+2]);
                     } else {
                         write(1, "Error! Unsupported parameters for command: cp\n", 46);
                     }
@@ -126,13 +136,20 @@ int main(int argc, char *argv[]) {
                         struct stat s;
                         if (stat(small_token_buffer.command_list[j+2], &s) == 0) {
                             if (s.st_mode & S_IFDIR) {
-                                strcat(small_token_buffer.command_list[j+2], "/");
-                                strcat(small_token_buffer.command_list[j+2],
+                                destPath = malloc(strlen(small_token_buffer.command_list[j+1]) +
+                                                  strlen(small_token_buffer.command_list[j+2]));
+                                strcpy(destPath, small_token_buffer.command_list[j+2]);
+                                strcat(destPath, "/");
+                                strcat(destPath,
                                        tiny_token_buffer.command_list[tiny_token_buffer.num_token-1]);
+                                moveFile(small_token_buffer.command_list[j+1],
+                                         destPath);
+                                free(destPath);
+                            } else {
+                                moveFile(small_token_buffer.command_list[j+1],
+                                         small_token_buffer.command_list[j+2]);
                             }
                         }
-                        moveFile(small_token_buffer.command_list[j+1],
-                                 small_token_buffer.command_list[j+2]);
                     } else {
                         write(1, "Error! Unsupported parameters for command: mv\n", 46);
                     }
