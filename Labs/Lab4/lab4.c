@@ -13,19 +13,37 @@ int main(int argc,char*argv[])
 		printf ("Wrong number of argument\n");
 		exit (0);
 	}
+    printf(" Process id %d\n", getpid());
+    fflush(stdout);
+
+    int n = atoi(argv[1]);
+    pid_t* pid_array;
+    n = atoi(arg[1]);
+    pid_array = malloc(sizeof(pid_t)*n);
+    pid_array[0] = getpid();
+
+    script_print(pid_array, n);
+    //pause();
+
+    char* argList[] = {"ls", "-a", "-l", 0};
+    if (execvp("ls", argList) == -1) {
+        perror("Execvp: ");
+    }
+
+    exit(0);
 
 	/*
 	*	TODO
-	*	#1	declear child process pool
+	*	#1	declare child process pool
 	*	#2 	spawn n new processes
 	*		first create the argument needed for the processes
 	*		for example "./iobound -seconds 10"
 	*	#3	call script_print
-	*	#4	wait for children processes to finish
+	*	#4	wait for children processes to finish -waitpid?
 	*	#5	free any dynamic memories
 	*/
 
-	return 0;
+	//return 0;
 }
 
 
