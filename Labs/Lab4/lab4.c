@@ -10,26 +10,42 @@ int main(int argc,char*argv[])
 {
 	if (argc == 1)
 	{
-		printf ("Wrong number of argument\n");
+		printf ("Wrong number of arguments\n");
 		exit (0);
 	}
     printf(" Process id %d\n", getpid());
     fflush(stdout);
+    /*
+    // step 1
+    pid_t child = fork();
+    if (child == 0) {
+        printf("hello this is the child.");
+    }
+    */
 
+    // step 2
+
+    /*
     int n = atoi(argv[1]);
-    pid_t* pid_array;
-    n = atoi(arg[1]);
+    pid_t* pid_array; // process pool
+    //n = atoi(arg[1]);
     pid_array = malloc(sizeof(pid_t)*n);
     pid_array[0] = getpid();
+
+    char* argList[] = {"./iobound", "-seconds", "10", NULL};
+    for (int i = 1; i < n; i++) {
+        if ((pid_array[i] = execvp("./iobound", argList)) == -1) {
+            perror("Execvp: ");
+        }
+    }
 
     script_print(pid_array, n);
     //pause();
 
-    char* argList[] = {"ls", "-a", "-l", 0};
-    if (execvp("ls", argList) == -1) {
-        perror("Execvp: ");
-    }
 
+
+    free(pid_array);
+     */
     exit(0);
 
 	/*
