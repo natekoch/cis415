@@ -6,62 +6,55 @@
 
 void script_print (pid_t* pid_ary, int size);
 
-int main(int argc,char*argv[])
-{
-	if (argc == 1)
-	{
-		printf ("Wrong number of arguments\n");
-		exit (0);
-	}
-    printf(" Process id %d\n", getpid());
-    fflush(stdout);
+int main(int argc,char*argv[]) {
+    /* --- task 1 --- */
     /*
-    // step 1
     pid_t child = fork();
     if (child == 0) {
         printf("hello this is the child.");
     }
     */
 
-    // step 2
-
+    /* --- task 2 --- */
     /*
-    int n = atoi(argv[1]);
-    pid_t* pid_array; // process pool
-    //n = atoi(arg[1]);
-    pid_array = malloc(sizeof(pid_t)*n);
-    pid_array[0] = getpid();
-
     char* argList[] = {"./iobound", "-seconds", "10", NULL};
-    for (int i = 1; i < n; i++) {
-        if ((pid_array[i] = execvp("./iobound", argList)) == -1) {
-            perror("Execvp: ");
+    if (execvp("./iobound", argList) == -1) {
+        perror("Execvp: ");
+    }
+    */
+
+    /* --- tasks 3 & 4 --- */
+    if (argc == 1) {
+        printf("Wrong number of arguments\n");
+        exit(0);
+    }
+
+    int n = atoi(argv[1]);
+    // process pool
+    pid_t *pid_array;
+    pid_array = malloc(sizeof(pid_t) * n);
+
+    char *argList[] = {"./iobound", "-seconds", "10", NULL};
+    for (int i = 0; i < n; i++) {
+        pid_array[i] = fork();
+        if (pid_array[i] < 0) {
+            perror("fork");
+        } else if (pid_array[i] == 0) {
+            if (execvp("./iobound", argList) == -1) {
+                perror("execvp");
+            }
+            exit(-1);
+        } else {
+            waitpid(pid_array[i], NULL, 0);
         }
     }
 
+    /* --- task 5 --- */
     script_print(pid_array, n);
-    //pause();
-
-
 
     free(pid_array);
-     */
     exit(0);
-
-	/*
-	*	TODO
-	*	#1	declare child process pool
-	*	#2 	spawn n new processes
-	*		first create the argument needed for the processes
-	*		for example "./iobound -seconds 10"
-	*	#3	call script_print
-	*	#4	wait for children processes to finish -waitpid?
-	*	#5	free any dynamic memories
-	*/
-
-	//return 0;
 }
-
 
 void script_print (pid_t* pid_ary, int size)
 {
