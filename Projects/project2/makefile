@@ -1,11 +1,12 @@
 CC=gcc
 CFLAGS=-g -W -Wall
-OBJECTS = part1.o
+DEPS = string_parser.h
+OBJECTS = part1.o string_parser.o
 PROGRAMS = part1
 
 all: part1
 
-%.o: %.c
+%.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 part1: part1.o
