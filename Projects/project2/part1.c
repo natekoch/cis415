@@ -7,11 +7,16 @@
 
 int main(int argc, char *argv[]) {
     FILE* FP = NULL;
+    // open file and argument error handling
     if (argc == 2) {
         FP = fopen(argv[1], "r");
-        // TODO: handle file error
+        if (FP == NULL) {
+            perror("fopen: ");
+            exit(-1);
+        }
     } else {
-        perror("invalid arguments");
+        printf("invalid arguments\n");
+        exit(-1);
     }
 
     size_t len = 512;
@@ -19,6 +24,7 @@ int main(int argc, char *argv[]) {
     char** lines = malloc (sizeof(char*));
     int line_number = 0;
 
+    // get the commands from each line of the file
     while (getline (&line_buf, &len, FP) != -1) {
         if (line_number != 0) {
             lines = realloc(lines, (line_number + 1) * sizeof(char *));
@@ -32,6 +38,7 @@ int main(int argc, char *argv[]) {
     pid_t *pid_array;
     pid_array = malloc(sizeof(pid_t) * line_number);
 
+    // spawn child processes
     for (int i = 0; i < line_number; i++) {
         line_token_buffer = str_filler(lines[i], " ");
         pid_array[i] = fork();
@@ -47,10 +54,12 @@ int main(int argc, char *argv[]) {
         free_command_line(&line_token_buffer);
     }
 
+    // wait for processes to exit
     for (int i = 0; i < line_number; i++) {
         waitpid(pid_array[i], NULL, 0);
     }
 
+    // free allocated memory
     for (int i = 0; i < line_number; i++) {
         free(lines[i]);
     }
