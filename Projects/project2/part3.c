@@ -6,6 +6,13 @@
 #include <sys/wait.h>
 #include "string_parser.h"
 
+int counter;
+void on_signal(int sig) {
+    counter = 1;
+    alarm(2);
+}
+
+
 int main(int argc, char *argv[]) {
     FILE* FP = NULL;
     // open file and argument error handling
@@ -79,6 +86,25 @@ int main(int argc, char *argv[]) {
         kill(pid_array[i], SIGCONT);
     }
 
+    sleep(3);
+    int status, toggle = 1;
+    while (1) {
+        if (counter == 1) {
+            waitpid(pid_array[0], &status, WNOHANG);
+            if(WIFEXITED(status)) break;
+            alarm(2);
+            counter = 0;
+            toggle++;
+
+            if (toggle % 2 == 0) {
+                kill(pid_array[0], SIGSTOP);
+            }
+
+            if (toggle % 2 == 0) {
+                kill(pid_array[0], SIGCONT);
+            }
+        }
+    }
     // wait for processes to exit
     for (int i = 0; i < line_number; i++) {
         waitpid(pid_array[i], NULL, 0);
