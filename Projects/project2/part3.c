@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
     int sig;
     sigset_t sigset;
     sigemptyset(&sigset);
-    sigaddset(&sigset, SIGUSR1);
+    sigaddset(&sigset, SIGCONT);
     // Block with SIGUSR1 signal
     sigprocmask(SIG_BLOCK, &sigset, NULL);
 
@@ -77,7 +77,7 @@ int main(int argc, char *argv[]) {
         }
         if (pid_array[i] == 0) {
             sigwait(&sigset, &sig);
-            if (sig) on_signal_sigusr1(sig);
+            //if (sig) on_signal_sigusr1(sig);
             signal(SIGSTOP, on_signal_stop);
             signal(SIGCONT, on_signal_cont);
             if (execvp(line_token_buffer.command_list[0], line_token_buffer.command_list) == -1) {
@@ -89,41 +89,42 @@ int main(int argc, char *argv[]) {
     }
 
     // send SIGUSR1
-    for (int i = 0; i < line_number; i++) {
+    /*for (int i = 0; i < line_number; i++) {
         kill(pid_array[i], SIGUSR1);
-    }
+    }*/
+    //alarm(2);
 
-    /*
-    sleep(5);
-    // send SIGSTOP
+    char process_exited[line_number];
     for (int i = 0; i < line_number; i++) {
-        kill(pid_array[i], SIGSTOP);
+        process_exited[i] = 0;
     }
-    sleep(5);
-    // send SIGCONT
-    for (int i = 0; i < line_number; i++) {
-        kill(pid_array[i], SIGCONT);
-    }
-    */
-    int process_exited[line_number] = {0};
 
     int status;
     int current_process = 0;
     int num_terminated = 0;
     while (1) {
-        printf("hello");
         if (counter == 1) {
             alarm(2);
             for (int i = 0; i < line_number; i++) {
-                kill(pid_array[i], SIGSTOP);
+                if (process_exited[i] == 0) {
+                    kill(pid_array[i], SIGSTOP);
+                }
             }
-            kill(pid_array[current_process], SIGCONT);
+            printf("%d\n", process_exited[current_process]);
+            if (process_exited[current_process] != 1) {
+                kill(pid_array[current_process], SIGCONT);
+            }
             current_process++;
             if (current_process == line_number) {
                 current_process = 0;
             }
             counter = 0;
             // check remaining processes status
+            if (process_exited[current_process] != 1) {
+                waitpid(pid_array[current_process], NULL, 0);
+                if (WIFEXITED(status)) num_terminated++;
+                if (num_terminated == line_number) break;
+            }
         }
     }
 
