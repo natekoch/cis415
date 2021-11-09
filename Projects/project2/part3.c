@@ -7,13 +7,28 @@
 #include "string_parser.h"
 
 int counter;
-void on_signal(int sig) {
+void on_signal_alarm(int sig) {
     counter = 1;
-    alarm(2);
+    printf("Process: %d - received SIGALRM: %d\n", getpid(), sig);
+}
+
+void on_signal_sigusr1(int sig) {
+    printf("Process: %d - received SIGUSR1: %d\n", getpid(), sig);
+}
+
+void on_signal_stop(int sig) {
+    printf("Process: %d - received SIGSTOP: %d", getpid(), sig);
+}
+
+void on_signal_cont(int sig) {
+    printf("Process: %d - received SIGCONT: %d", getpid(), sig);
 }
 
 
 int main(int argc, char *argv[]) {
+    signal(SIGALRM, on_signal_alarm);
+    alarm(2);
+
     FILE* FP = NULL;
     // open file and argument error handling
     if (argc == 2) {
@@ -62,6 +77,9 @@ int main(int argc, char *argv[]) {
         }
         if (pid_array[i] == 0) {
             sigwait(&sigset, &sig);
+            if (sig) on_signal_sigusr1(sig);
+            signal(SIGSTOP, on_signal_stop);
+            signal(SIGCONT, on_signal_cont);
             if (execvp(line_token_buffer.command_list[0], line_token_buffer.command_list) == -1) {
                 perror("execvp");
             }
@@ -70,11 +88,12 @@ int main(int argc, char *argv[]) {
         free_command_line(&line_token_buffer);
     }
 
-    sleep(5);
     // send SIGUSR1
     for (int i = 0; i < line_number; i++) {
         kill(pid_array[i], SIGUSR1);
     }
+
+    /*
     sleep(5);
     // send SIGSTOP
     for (int i = 0; i < line_number; i++) {
@@ -85,26 +104,30 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < line_number; i++) {
         kill(pid_array[i], SIGCONT);
     }
+    */
+    int process_exited[line_number] = {0};
 
-    sleep(3);
-    int status, toggle = 1;
+    int status;
+    int current_process = 0;
+    int num_terminated = 0;
     while (1) {
+        printf("hello");
         if (counter == 1) {
-            waitpid(pid_array[0], &status, WNOHANG);
-            if(WIFEXITED(status)) break;
             alarm(2);
+            for (int i = 0; i < line_number; i++) {
+                kill(pid_array[i], SIGSTOP);
+            }
+            kill(pid_array[current_process], SIGCONT);
+            current_process++;
+            if (current_process == line_number) {
+                current_process = 0;
+            }
             counter = 0;
-            toggle++;
-
-            if (toggle % 2 == 0) {
-                kill(pid_array[0], SIGSTOP);
-            }
-
-            if (toggle % 2 == 0) {
-                kill(pid_array[0], SIGCONT);
-            }
+            // check remaining processes status
         }
     }
+
+
     // wait for processes to exit
     for (int i = 0; i < line_number; i++) {
         waitpid(pid_array[i], NULL, 0);
