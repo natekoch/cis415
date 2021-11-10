@@ -1,0 +1,54 @@
+==1987== Memcheck, a memory error detector
+==1987== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==1987== Using Valgrind-3.13.0 and LibVEX; rerun with -h for copyright info
+==1987== Command: ./part1 input.txt
+==1987== 
+total 428
+  8 string_parser.o
+  4 string_parser.h
+  4 string_parser.c
+192 Project-2-Description.docx.pdf
+ 20 part4.o
+  8 part4.c
+ 24 part4
+ 16 part3.o
+  8 part3.c
+ 20 part3
+ 12 part2.o
+  4 part2.c
+ 20 part2
+ 12 part1.o
+  4 part1.c
+ 20 part1
+  4 makefile
+  4 log1.txt
+  4 iobound.c
+ 12 iobound
+  4 input.txt
+  4 cpubound.c
+ 12 cpubound
+  4 ..
+  4 .
+execvp: No such file or directory
+==1990== 
+==1990== HEAP SUMMARY:
+==1990==     in use at exit: 0 bytes in 0 blocks
+==1990==   total heap usage: 28 allocs, 28 frees, 5,539 bytes allocated
+==1990== 
+==1990== All heap blocks were freed -- no leaks are possible
+==1990== 
+==1990== For counts of detected and suppressed errors, rerun with: -v
+==1990== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+Process: 1992 - Begining calculation.
+Process: 1992 - Finished.
+Process: 1991 - Begining to write to file.
+Process: 1991 - Finished.
+==1987== 
+==1987== HEAP SUMMARY:
+==1987==     in use at exit: 0 bytes in 0 blocks
+==1987==   total heap usage: 38 allocs, 38 frees, 5,694 bytes allocated
+==1987== 
+==1987== All heap blocks were freed -- no leaks are possible
+==1987== 
+==1987== For counts of detected and suppressed errors, rerun with: -v
+==1987== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
