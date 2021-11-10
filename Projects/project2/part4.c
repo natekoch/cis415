@@ -104,6 +104,46 @@ int main(int argc, char *argv[]) {
             if (process_exited[current_process] != 1) {
                 kill(pid_array[current_process], SIGCONT);
             }
+
+            char fname_buf[128];
+            sprintf(fname_buf, "/proc/%d/status", pid_array[current_process]);
+            FILE* proc_file = fopen(fname_buf, "r");
+            char proc_line[128];
+            printf("\n///// CURRENT PROC STATUS \\\\\\\\\\\n");
+            if (proc_file) {
+                while (fgets(proc_line, 128, proc_file)) {
+                    if (strncmp(proc_line, "Name:", 5) == 0) {
+                        printf("%s", proc_line);
+                    }
+                    if (strncmp(proc_line, "State:", 6) == 0) {
+                        printf("%s", proc_line);
+                    }
+                    if (strncmp(proc_line, "Pid:", 4) == 0) {
+                        printf("%s", proc_line);
+                    }
+                    if (strncmp(proc_line, "PPid:", 5) == 0) {
+                        printf("%s", proc_line);
+                    }
+                    if (strncmp(proc_line, "TracerPid:", 10) == 0) {
+                        printf("%s", proc_line);
+                    }
+                    if (strncmp(proc_line, "Threads:", 8) == 0) {
+                        printf("%s", proc_line);
+                    }
+                    if (strncmp(proc_line, "VmPeak:", 7) == 0) {
+                        printf("%s", proc_line);
+                    }
+                    if (strncmp(proc_line, "VmSize:", 7) == 0) {
+                        printf("%s", proc_line);
+                    }
+                    if (strncmp(proc_line, "SigQ:", 5) == 0) {
+                        printf("%s", proc_line);
+                    }
+                }
+                fclose(proc_file);
+            }
+            printf("\\\\\\\\\\ END OF CURRENT PROC STATUS /////\n\n");
+
             // check if the process has exited
             if (process_exited[current_process] != 1) {
                 waitpid(pid_array[current_process], &status, WNOHANG | WUNTRACED | WCONTINUED);
