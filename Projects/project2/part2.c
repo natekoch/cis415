@@ -58,30 +58,50 @@ int main(int argc, char *argv[]) {
             if (execvp(line_token_buffer.command_list[0], line_token_buffer.command_list) == -1) {
                 perror("execvp");
             }
+            free_command_line(&line_token_buffer);
+            for (int i = 0; i < line_number; i++) {
+                free(lines[i]);
+            }
+            free(lines);
+            free(line_buf);
+            free(pid_array);
             exit(-1);
         }
         free_command_line(&line_token_buffer);
     }
 
+    // print out pids
+    printf("--- CHILD PIDS ---\n");
+    for (int i = 0; i < line_number; i++) {
+        printf("Child #%d: %d\n", i, pid_array[i]);
+    }
+    printf("------------------\n\n");
+
     sleep(5);
     // send SIGUSR1
     for (int i = 0; i < line_number; i++) {
+        printf("!!! Sending SIGUSR1 to process: %d !!!\n", pid_array[i]);
         kill(pid_array[i], SIGUSR1);
     }
     sleep(5);
+    printf("\n");
     // send SIGSTOP
     for (int i = 0; i < line_number; i++) {
+        printf("!!! Sending SIGSTOP to process: %d !!!\n", pid_array[i]);
         kill(pid_array[i], SIGSTOP);
     }
     sleep(5);
+    printf("\n");
     // send SIGCONT
     for (int i = 0; i < line_number; i++) {
+        printf("!!! Sending SIGCONT to process: %d !!!\n", pid_array[i]);
         kill(pid_array[i], SIGCONT);
     }
-
+    printf("\n");
     // wait for processes to exit
     for (int i = 0; i < line_number; i++) {
         waitpid(pid_array[i], NULL, 0);
+        printf("@@@ Done waiting for process: %d to exit @@@\n", pid_array[i]);
     }
 
     // free allocated memory

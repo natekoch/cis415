@@ -70,8 +70,14 @@ int main(int argc, char *argv[]) {
             sigwait(&sigset, &sig);
             if (execvp(line_token_buffer.command_list[0], line_token_buffer.command_list) == -1) {
                 perror("execvp");
-                exit(-1);
             }
+            free_command_line(&line_token_buffer);
+            for (int i = 0; i < line_number; i++) {
+                free(lines[i]);
+            }
+            free(lines);
+            free(line_buf);
+            free(pid_array);
             exit(-1);
         }
         free_command_line(&line_token_buffer);
@@ -105,44 +111,67 @@ int main(int argc, char *argv[]) {
                 kill(pid_array[current_process], SIGCONT);
             }
 
+            FILE *proc_file = NULL;
             char fname_buf[128];
-            sprintf(fname_buf, "/proc/%d/status", pid_array[current_process]);
-            FILE* proc_file = fopen(fname_buf, "r");
             char proc_line[128];
-            printf("\n///// CURRENT PROC STATUS \\\\\\\\\\\n");
-            if (proc_file) {
-                while (fgets(proc_line, 128, proc_file)) {
-                    if (strncmp(proc_line, "Name:", 5) == 0) {
-                        printf("%s", proc_line);
+            printf("\n///// PROC STATUS TABLE \\\\\\\\\\\n");
+            for (int i = 0; i < line_number; i++) {
+                sprintf(fname_buf, "/proc/%d/status", pid_array[i]);
+                proc_file = fopen(fname_buf, "r");
+                if (proc_file) {
+                    printf("%%%%%% CHILD %d STATUS %%%%%%\n", i);
+                    while (fgets(proc_line, 128, proc_file)) {
+                        if (strncmp(proc_line, "Name:", 5) == 0) {
+                            printf("%s", proc_line);
+                        }
+                        if (strncmp(proc_line, "State:", 6) == 0) {
+                            printf("%s", proc_line);
+                        }
+                        if (strncmp(proc_line, "Pid:", 4) == 0) {
+                            printf("%s", proc_line);
+                        }
+                        if (strncmp(proc_line, "PPid:", 5) == 0) {
+                            printf("%s", proc_line);
+                        }
+                        if (strncmp(proc_line, "Threads:", 8) == 0) {
+                            printf("%s", proc_line);
+                        }
+                        if (strncmp(proc_line, "VmPeak:", 7) == 0) {
+                            printf("%s", proc_line);
+                        }
+                        if (strncmp(proc_line, "VmSize:", 7) == 0) {
+                            printf("%s", proc_line);
+                        }
+                        if (strncmp(proc_line, "SigQ:", 5) == 0) {
+                            printf("%s", proc_line);
+                        }
+                        if (strncmp(proc_line, "SigPnd:", 7) == 0) {
+                            printf("%s", proc_line);
+                        }
+                        if (strncmp(proc_line, "SigBlk:", 7) == 0) {
+                            printf("%s", proc_line);
+                        }
+                        if (strncmp(proc_line, "SigIgn:", 7) == 0) {
+                            printf("%s", proc_line);
+                        }
+                        if (strncmp(proc_line, "SigCgt:", 7) == 0) {
+                            printf("%s", proc_line);
+                        }
+                        if (strncmp(proc_line, "Mems_allowed_list:", 18) == 0) {
+                            printf("%s", proc_line);
+                        }
+                        if (strncmp(proc_line, "voluntary_ctxt_switches:", 24) == 0) {
+                            printf("%s", proc_line);
+                        }
+                        if (strncmp(proc_line, "nonvoluntary_ctxt_switches:", 27) == 0) {
+                            printf("%s", proc_line);
+                        }
                     }
-                    if (strncmp(proc_line, "State:", 6) == 0) {
-                        printf("%s", proc_line);
-                    }
-                    if (strncmp(proc_line, "Pid:", 4) == 0) {
-                        printf("%s", proc_line);
-                    }
-                    if (strncmp(proc_line, "PPid:", 5) == 0) {
-                        printf("%s", proc_line);
-                    }
-                    if (strncmp(proc_line, "TracerPid:", 10) == 0) {
-                        printf("%s", proc_line);
-                    }
-                    if (strncmp(proc_line, "Threads:", 8) == 0) {
-                        printf("%s", proc_line);
-                    }
-                    if (strncmp(proc_line, "VmPeak:", 7) == 0) {
-                        printf("%s", proc_line);
-                    }
-                    if (strncmp(proc_line, "VmSize:", 7) == 0) {
-                        printf("%s", proc_line);
-                    }
-                    if (strncmp(proc_line, "SigQ:", 5) == 0) {
-                        printf("%s", proc_line);
-                    }
+                    fclose(proc_file);
+                    printf("%%%%%% END CHILD %d STATUS %%%%%%\n\n", i);
                 }
-                fclose(proc_file);
             }
-            printf("\\\\\\\\\\ END OF CURRENT PROC STATUS /////\n\n");
+            printf("\\\\\\\\\\ END OF PROC STATUS TABLE /////\n\n");
 
             // check if the process has exited
             if (process_exited[current_process] != 1) {

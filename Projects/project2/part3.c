@@ -70,8 +70,14 @@ int main(int argc, char *argv[]) {
             sigwait(&sigset, &sig);
             if (execvp(line_token_buffer.command_list[0], line_token_buffer.command_list) == -1) {
                 perror("execvp");
-                exit(-1);
             }
+            free_command_line(&line_token_buffer);
+            for (int i = 0; i < line_number; i++) {
+                free(lines[i]);
+            }
+            free(lines);
+            free(line_buf);
+            free(pid_array);
             exit(-1);
         }
         free_command_line(&line_token_buffer);
