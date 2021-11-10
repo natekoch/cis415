@@ -1,3 +1,10 @@
+/*
+ * Nate Koch
+ * CIS 415
+ * project 2 - part 1
+ */
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
