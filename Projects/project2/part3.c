@@ -6,22 +6,12 @@
 #include <sys/wait.h>
 #include "string_parser.h"
 
-int counter;
+
+static volatile sig_atomic_t counter = 1;
 void on_signal_alarm(int sig) {
+    (void)sig;
     counter = 1;
-    printf("Process: %d - received SIGALRM: %d\n", getpid(), sig);
-}
-
-void on_signal_sigusr1(int sig) {
-    printf("Process: %d - received SIGUSR1: %d\n", getpid(), sig);
-}
-
-void on_signal_stop(int sig) {
-    printf("Process: %d - received SIGSTOP: %d", getpid(), sig);
-}
-
-void on_signal_cont(int sig) {
-    printf("Process: %d - received SIGCONT: %d", getpid(), sig);
+    printf("~~~ Parent process (%d) - switching context ~~~\n", getpid());
 }
 
 
@@ -76,28 +66,26 @@ int main(int argc, char *argv[]) {
             perror("fork");
         }
         if (pid_array[i] == 0) {
+            // wait for SIGCONT
             sigwait(&sigset, &sig);
-            //if (sig) on_signal_sigusr1(sig);
-            signal(SIGSTOP, on_signal_stop);
-            signal(SIGCONT, on_signal_cont);
             if (execvp(line_token_buffer.command_list[0], line_token_buffer.command_list) == -1) {
                 perror("execvp");
+                exit(-1);
             }
             exit(-1);
         }
         free_command_line(&line_token_buffer);
     }
 
-    // send SIGUSR1
-    /*for (int i = 0; i < line_number; i++) {
-        kill(pid_array[i], SIGUSR1);
-    }*/
-    //alarm(2);
-
     char process_exited[line_number];
+    // print out child pids
+    printf("\n--- CHILD PIDS ---\n");
+    // set all child processes to not yet exited (0)
     for (int i = 0; i < line_number; i++) {
         process_exited[i] = 0;
+        printf("Child %d: %d\n", i, pid_array[i]);
     }
+    printf("------------------\n\n");
 
     int status;
     int current_process = 0;
@@ -105,33 +93,43 @@ int main(int argc, char *argv[]) {
     while (1) {
         if (counter == 1) {
             alarm(2);
+            // send SIGSTOP to all children
             for (int i = 0; i < line_number; i++) {
                 if (process_exited[i] == 0) {
                     kill(pid_array[i], SIGSTOP);
                 }
             }
-            printf("%d\n", process_exited[current_process]);
+            printf("> Current running process: %d\n\n", pid_array[current_process]);
+            // send SIGCONT to the current process
             if (process_exited[current_process] != 1) {
                 kill(pid_array[current_process], SIGCONT);
             }
-            current_process++;
-            if (current_process == line_number) {
-                current_process = 0;
-            }
-            counter = 0;
-            // check remaining processes status
+            // check if the process has exited
             if (process_exited[current_process] != 1) {
-                waitpid(pid_array[current_process], NULL, 0);
-                if (WIFEXITED(status)) num_terminated++;
-                if (num_terminated == line_number) break;
+                waitpid(pid_array[current_process], &status, WNOHANG | WUNTRACED | WCONTINUED);
+                if (WIFEXITED(status)) {
+                    printf("~ process : %d exited ~\n\n", pid_array[current_process]);
+                    num_terminated++;
+                    process_exited[current_process] = 1;
+                }
             }
+            if (num_terminated == line_number) {
+                printf("##### ALL PROCESSES FINISHED #####\n");
+                break;
+            }
+            // set current_process to an non-exited process
+            while (1) {
+                current_process++;
+                if (current_process == line_number) {
+                    current_process = 0;
+                }
+                if (process_exited[current_process] == 0) {
+                    break;
+                }
+            }
+            // reset the alarm counter
+            counter = 0;
         }
-    }
-
-
-    // wait for processes to exit
-    for (int i = 0; i < line_number; i++) {
-        waitpid(pid_array[i], NULL, 0);
     }
 
     // free allocated memory
