@@ -27,22 +27,26 @@ int main(int argc, char *argv[]) {
     int line_number = 0;
     command_line line; 
     int current_account = 0;
-    int current_account_value = 0; 
+    int current_account_value = 0;
+    char* stripped_line;
 
     // loop through file
-    while (fgets(&line_buf, &len, FP) != -1) {
+    while (getline (&line_buf, &len, FPin) != -1) {
         if (line_number == 0) {
             number_of_accounts = atoi(line_buf);
             account_list = malloc (number_of_accounts * sizeof(account));
         } else if (line_number > 0 && line_number <= number_of_accounts*5+1) {
             if (current_account_value == 0) { // index number line
                 current_account_value++;
-                continue;
             } else if (current_account_value == 1) { // account number line
-                strncpy(line_buf, account_list[current_account].account_number, 17);
+                stripped_line = strndup(line_buf, strlen(line_buf));
+                stripped_line[strlen(stripped_line)-1] = '\0';
+                strncpy(account_list[current_account].account_number, stripped_line, 17);
                 current_account_value++;
             } else if (current_account_value == 2) { // password
-                strncpy(line_buf, account_list[current_account].password,  9);
+                stripped_line = strndup(line_buf, strlen(line_buf));
+                stripped_line[strlen(stripped_line)-1] = '\0';
+                strncpy(account_list[current_account].password, stripped_line, 9);
                 current_account_value++;
             } else if (current_account_value == 3) { // initial balance
                 account_list[current_account].balance = atof(line_buf);
@@ -64,7 +68,7 @@ int main(int argc, char *argv[]) {
     FILE* FPout = NULL;
     FPout = fopen("output.txt", "w+");
     for (int i = 0; i < number_of_accounts; i++) {
-        fprintf(FPout, "%d balance:  %f\n\n", i, account_list[i].balance);
+        fprintf(FPout, "%d balance:  %.2f\n\n", i, account_list[i].balance);
     }
 
     free(account_list);
@@ -101,6 +105,7 @@ void* process_transaction(command_line* transaction) {
                 src_account = account_list[i];
                 src_found = 1;
                 if (strncmp(account_list[i].password, password, 9) != 0) {
+                    printf("%s - %s\n", account_list[i].password, password);
                     printf("Error: invalid password, account number: %s\n", src_account_number);
                     break;
                 } else {
@@ -113,11 +118,12 @@ void* process_transaction(command_line* transaction) {
             }
         }
 
-        if (password_match && src_found && dest_found) {
-            account_list[atoi(src_account_number)].balance -= atof(amount);
-            account_list[atoi(dest_account_number)].balance += atof(amount);
+        if (password_match == 1 && src_found == 1 && dest_found == 1) {
+            src_account.balance -= atof(amount);
+            dest_account.balance += atof(amount);
         } else {
-            printf("Error: invalid account info.\n");
+            printf("pswd: %d; sf: %d; df: %d\n", password_match, src_found, dest_found);
+            printf("T Error: invalid account info.\n");
         }
     }
     // if transaction is check balance
@@ -138,10 +144,10 @@ void* process_transaction(command_line* transaction) {
             }
         }
 
-        if (password_match && src_found) {
-            printf("Account: %s: balance: %f\n", src_account_number, account_list[atoi(src_account_number)].balance);
+        if (password_match == 1 && src_found == 1) {
+            printf("Account: %s: balance: %f\n", src_account_number, src_account.balance);
         } else {
-            printf("Error: invalid account info.\n");
+            printf("C Error: invalid account info.\n");
         }
     }
     // if transaction is deposit
@@ -163,10 +169,10 @@ void* process_transaction(command_line* transaction) {
             }
         }
 
-        if (password_match && src_found) {
-            account_list[atoi(src_account_number)].balance += atof(amount);
+        if (password_match == 1 && src_found == 1) {
+            src_account.balance += atof(amount);
         } else {
-            printf("Error: invalid account info.\n");
+            printf("D Error: invalid account info.\n");
         }
     }
     // if transaction is withdraw
@@ -188,18 +194,21 @@ void* process_transaction(command_line* transaction) {
             }
         }
 
-        if (password_match && src_found) {
-            account_list[atoi(src_account_number)].balance -= atof(amount);
+        if (password_match == 1 && src_found == 1) {
+            src_account.balance -= atof(amount);
         } else {
-            printf("Error: invalid account info.\n");
+            printf("W Error: invalid account info.\n");
         }
     }
     // else
     else {
         printf("Error: Transaction type is invalid.\n");
     }
+
+    return;
 }
 
 void* update_balance(void* arg) {
-    
+    (void)arg;
+    return ;
 }
