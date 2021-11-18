@@ -43,11 +43,13 @@ int main(int argc, char *argv[]) {
                 stripped_line[strlen(stripped_line)-1] = '\0';
                 strncpy(account_list[current_account].account_number, stripped_line, 17);
                 current_account_value++;
+                free(stripped_line);
             } else if (current_account_value == 2) { // password
                 stripped_line = strndup(line_buf, strlen(line_buf));
                 stripped_line[strlen(stripped_line)-1] = '\0';
                 strncpy(account_list[current_account].password, stripped_line, 9);
                 current_account_value++;
+                free(stripped_line);
             } else if (current_account_value == 3) { // initial balance
                 account_list[current_account].balance = atof(line_buf);
                 current_account_value++;
@@ -205,10 +207,9 @@ void* process_transaction(command_line* transaction) {
         printf("Error: Transaction type is invalid.\n");
     }
 
-    return;
+    return (void*) transaction;
 }
 
 void* update_balance(void* arg) {
-    (void)arg;
-    return ;
+    return arg;
 }

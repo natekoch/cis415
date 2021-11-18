@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-g -W -Wall
+CFLAGS=-g
 DEPS = string_parser.h bank.h account.h string_parser.h
 OBJECTS = bank.o string_parser.o
 PROGRAMS = bank
