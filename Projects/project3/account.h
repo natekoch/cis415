@@ -12,7 +12,7 @@ typedef struct
 
     char out_file[64];
 
-    pthread_mutex_t ac_lock;
+    //pthread_mutex_t ac_lock;
 }account;
 
 #endif /* ACCOUNT_H_ */
