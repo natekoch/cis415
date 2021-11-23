@@ -38,6 +38,7 @@ int main(int argc, char *argv[]) {
         } else if (line_number > 0 && line_number <= number_of_accounts*5+1) {
             if (current_account_value == 0) { // index number line
                 current_account_value++;
+                account_list[current_account].transaction_tracter = 0;
             } else if (current_account_value == 1) { // account number line
                 stripped_line = strndup(line_buf, strlen(line_buf));
                 stripped_line[strlen(stripped_line)-1] = '\0';
@@ -85,8 +86,8 @@ void* process_transaction(command_line* transaction) {
     // check for transaction type
     char type[1];
     strncpy(type, transaction->command_list[0], 1);
-    account src_account;
-    account dest_account;
+    account* src_account;
+    account* dest_account;
     char* src_account_number;
     char* password; 
     char* amount; 
@@ -104,7 +105,7 @@ void* process_transaction(command_line* transaction) {
 
         for (int i = 0; i < number_of_accounts; i++) {
             if (src_found != 1 && strncmp(account_list[i].account_number, src_account_number, 17) == 0) {
-                src_account = account_list[i];
+                src_account = &account_list[i];
                 src_found = 1;
                 if (strncmp(account_list[i].password, password, 9) != 0) {
                     printf("%s - %s\n", account_list[i].password, password);
@@ -115,14 +116,14 @@ void* process_transaction(command_line* transaction) {
                 }
             }
             if (dest_found != 1 && strncmp(account_list[i].account_number, dest_account_number, 17) == 0) {
-                dest_account = account_list[i];
+                dest_account = &account_list[i];
                 dest_found = 1;
             }
         }
 
         if (password_match == 1 && src_found == 1 && dest_found == 1) {
-            src_account.balance -= atof(amount);
-            dest_account.balance += atof(amount);
+            src_account->balance -= atof(amount);
+            dest_account->balance += atof(amount);
         } else {
             printf("pswd: %d; sf: %d; df: %d\n", password_match, src_found, dest_found);
             printf("T Error: invalid account info.\n");
@@ -135,7 +136,7 @@ void* process_transaction(command_line* transaction) {
 
         for (int i = 0; i < number_of_accounts; i++) {
             if (src_found != 1 && strncmp(account_list[i].account_number, src_account_number, 17) == 0) {
-                src_account = account_list[i];
+                src_account = &account_list[i];
                 src_found = 1;
                 if (strncmp(account_list[i].password, password, 9) != 0) {
                     printf("Error: invalid password, account number: %s\n", src_account_number);
@@ -147,7 +148,7 @@ void* process_transaction(command_line* transaction) {
         }
 
         if (password_match == 1 && src_found == 1) {
-            printf("Account: %s: balance: %f\n", src_account_number, src_account.balance);
+            printf("Account: %s: balance: %f\n", src_account_number, src_account->balance);
         } else {
             printf("C Error: invalid account info.\n");
         }
@@ -160,7 +161,7 @@ void* process_transaction(command_line* transaction) {
 
         for (int i = 0; i < number_of_accounts; i++) {
             if (src_found != 1 && strncmp(account_list[i].account_number, src_account_number, 17) == 0) {
-                src_account = account_list[i];
+                src_account = &account_list[i];
                 src_found = 1;
                 if (strncmp(account_list[i].password, password, 9) != 0) {
                     printf("Error: invalid password, account number: %s\n", src_account_number);
@@ -172,7 +173,7 @@ void* process_transaction(command_line* transaction) {
         }
 
         if (password_match == 1 && src_found == 1) {
-            src_account.balance += atof(amount);
+            src_account->balance += atof(amount);
         } else {
             printf("D Error: invalid account info.\n");
         }
@@ -185,7 +186,7 @@ void* process_transaction(command_line* transaction) {
 
         for (int i = 0; i < number_of_accounts; i++) {
             if (src_found != 1 && strncmp(account_list[i].account_number, src_account_number, 17) == 0) {
-                src_account = account_list[i];
+                src_account = &account_list[i];
                 src_found = 1;
                 if (strncmp(account_list[i].password, password, 9) != 0) {
                     printf("Error: invalid password, account number: %s\n", src_account_number);
@@ -197,7 +198,7 @@ void* process_transaction(command_line* transaction) {
         }
 
         if (password_match == 1 && src_found == 1) {
-            src_account.balance -= atof(amount);
+            src_account->balance -= atof(amount);
         } else {
             printf("W Error: invalid account info.\n");
         }
