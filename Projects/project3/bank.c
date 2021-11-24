@@ -8,6 +8,13 @@
 int number_of_accounts = 0;
 account* account_list;
 
+//temp test values;
+int num_t = 0;
+int num_d = 0;
+int num_w = 0;
+int num_c = 0;
+int num_f = 0;
+
 int main(int argc, char *argv[]) {
     FILE* FPin = NULL;
     // open file and argument error handling
@@ -35,7 +42,7 @@ int main(int argc, char *argv[]) {
         if (line_number == 0) {
             number_of_accounts = atoi(line_buf);
             account_list = malloc (number_of_accounts * sizeof(account));
-        } else if (line_number > 0 && line_number <= number_of_accounts*5+1) {
+        } else if (line_number > 0 && line_number <= number_of_accounts*5) {
             if (current_account_value == 0) { // index number line
                 current_account_value++;
                 account_list[current_account].transaction_tracter = 0;
@@ -62,16 +69,21 @@ int main(int argc, char *argv[]) {
         } else {
             line = str_filler(line_buf, " ");
             process_transaction(&line);
-            //update_balance();
             free_command_line(&line);
         }
         line_number++;
     }
+    update_balance(NULL);
+    printf("T: %d\n", num_t);
+    printf("D: %d\n", num_d);
+    printf("C: %d\n", num_c);
+    printf("W: %d\n", num_w);
+    printf("F: %d\n", num_f);
 
     FILE* FPout = NULL;
     FPout = fopen("output.txt", "w+");
     for (int i = 0; i < number_of_accounts; i++) {
-        fprintf(FPout, "%d balance:  %.2f\n\n", i, account_list[i].balance);
+        fprintf(FPout, "%d balance:\t%.2f\n\n", i, account_list[i].balance);
     }
 
     free(account_list);
@@ -123,10 +135,13 @@ void* process_transaction(command_line* transaction) {
 
         if (password_match == 1 && src_found == 1 && dest_found == 1) {
             src_account->balance -= atof(amount);
+            src_account->transaction_tracter += atof(amount);
             dest_account->balance += atof(amount);
+            num_t++;
         } else {
             printf("pswd: %d; sf: %d; df: %d\n", password_match, src_found, dest_found);
             printf("T Error: invalid account info.\n");
+            num_f++;
         }
     }
     // if transaction is check balance
@@ -149,8 +164,10 @@ void* process_transaction(command_line* transaction) {
 
         if (password_match == 1 && src_found == 1) {
             printf("Account: %s: balance: %f\n", src_account_number, src_account->balance);
+            num_c++;
         } else {
             printf("C Error: invalid account info.\n");
+            num_f++;
         }
     }
     // if transaction is deposit
@@ -174,8 +191,11 @@ void* process_transaction(command_line* transaction) {
 
         if (password_match == 1 && src_found == 1) {
             src_account->balance += atof(amount);
+            src_account->transaction_tracter += atof(amount);
+            num_d++;
         } else {
             printf("D Error: invalid account info.\n");
+            num_f++;
         }
     }
     // if transaction is withdraw
@@ -199,18 +219,26 @@ void* process_transaction(command_line* transaction) {
 
         if (password_match == 1 && src_found == 1) {
             src_account->balance -= atof(amount);
+            src_account->transaction_tracter += atof(amount);
+            num_w++;
         } else {
             printf("W Error: invalid account info.\n");
+            num_f++;
         }
     }
-    // else
+    // else invalid transaction
     else {
         printf("Error: Transaction type is invalid.\n");
+        num_f++;
     }
 
     return (void*) transaction;
 }
 
 void* update_balance(void* arg) {
-    return arg;
+    for (int i = 0; i < number_of_accounts; i++) {
+        account_list[i].balance += 
+            account_list[i].transaction_tracter * account_list[i].reward_rate;
+    }
+    return NULL;
 }
