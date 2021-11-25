@@ -98,7 +98,6 @@ void* create_output_file() {
 
 void* create_accounts(char*** input_lines) {
     char** lines = *input_lines;
-    printf("%s", lines[0]);
     int current_line = 0;
     int current_account = 0;
     int current_account_value = 0;
@@ -144,7 +143,7 @@ void* read_transactions(char*** input_lines) {
     char** lines = *input_lines;
     int start_line = number_of_accounts*5+1;
     int current_line = start_line;
-    int transaction_line = start_line;
+    int transaction_line = 0;
     double num_transactions_per_thread = ceil(num_transactions/NUM_THREADS);
     command_line transaction;
     int error;
@@ -152,37 +151,48 @@ void* read_transactions(char*** input_lines) {
 
     // TODO: populate transaction structs
     while (lines[current_line] != NULL) {
-        if ()
-        split_transactions[current_thread].transactions = 
+        if (transaction_line == 0) {
+            split_transactions[current_thread].transactions = malloc (sizeof(char*));
+            transaction_line++;
+        } else if (transaction_line <= num_transactions_per_thread) {
+            split_transactions[current_thread].transactions[transaction_line-1] = 
+                str_filler(lines[current_line], " ");
+            transaction_line++;
+            current_line++;
+        } else {
+            transaction_line = 0;
+            current_thread++;
+        }
     }
 
+    
     for (int i = 0; i < NUM_THREADS; i++) {
-        error = pthread_create(&(tid[i]), NULL, &process_transaction, (void*)&transaction);
+        error = pthread_create(&(tid[i]), 
+                                NULL, 
+                                &process_transaction, 
+                                (void*)&split_transactions[i]);
     }
     
     for (int i = 0; i < NUM_THREADS; i++) {
         pthread_join(tid[i], NULL);
     }
 
-    free(split_transactions);
-    /*
-    while (lines[current_line] != NULL) {
-        transaction = str_filler(lines[current_line], " ");
-        process_transaction(&transaction);
-        free_command_line(&transaction);
-        current_line++;
+
+    for (int i = 0; i < NUM_THREADS; i++) {
+        for (int j = 0; i < num_transactions_per_thread; j++) {
+            free_command_line(&split_transactions[i].transactions[j]);
+        }
     }
-    */
+    free(split_transactions);
 }
 
 void* process_transaction(void* arg) {
-
-    // TODO: go from arg to command lines need a loop
-    char** transactions;
-    command_line* transaction;
+    transaction_arg* transactions = arg;
+    printf("%s\n", transactions->transactions[0].command_list[0]);
+    command_line transaction;
     // check for transaction type
     char type[1];
-    strncpy(type, transaction->command_list[0], 1);
+    int current_transaction = 0;
     account* src_account;
     account* dest_account;
     char* src_account_number;
@@ -193,142 +203,158 @@ void* process_transaction(void* arg) {
     int dest_found = 0;
     int password_match = 0; 
 
+    // TODO: go from arg to command lines need a loop
+    while (transactions->transactions[current_transaction].command_list != NULL) {
+        // Reset variables
+        src_account = NULL;
+        dest_account = NULL;
+        src_account_number = NULL;
+        password = NULL; 
+        amount = NULL; 
+        dest_account_number = NULL;
+        src_found = 0;
+        dest_found = 0;
+        password_match = 0; 
+        transaction = transactions->transactions[current_transaction];
+        printf("%s\n", transaction.command_list[0]);
+        // if transaction is transfer
+        if (strncmp(transaction.command_list[0], "T", 1) == 0) {
+            src_account_number = transaction.command_list[1];
+            password = transaction.command_list[2];
+            dest_account_number = transaction.command_list[3];
+            amount = transaction.command_list[4];
 
-
-    // if transaction is transfer
-    if (strncmp(type, "T", 1) == 0) {
-        src_account_number = transaction->command_list[1];
-        password = transaction->command_list[2];
-        dest_account_number = transaction->command_list[3];
-        amount = transaction->command_list[4];
-
-        for (int i = 0; i < number_of_accounts; i++) {
-            if (src_found != 1 && strncmp(account_list[i].account_number, src_account_number, 17) == 0) {
-                src_account = &account_list[i];
-                src_found = 1;
-                if (strncmp(account_list[i].password, password, 9) != 0) {
-                    printf("%s - %s\n", account_list[i].password, password);
-                    printf("Error: invalid password, account number: %s\n", src_account_number);
-                    break;
-                } else {
-                    password_match = 1;
+            for (int i = 0; i < number_of_accounts; i++) {
+                if (src_found != 1 && strncmp(account_list[i].account_number, src_account_number, 17) == 0) {
+                    src_account = &account_list[i];
+                    src_found = 1;
+                    if (strncmp(account_list[i].password, password, 9) != 0) {
+                        printf("Error: invalid password, account number: %s\n", src_account_number);
+                        break;
+                    } else {
+                        password_match = 1;
+                    }
+                }
+                if (dest_found != 1 && strncmp(account_list[i].account_number, dest_account_number, 17) == 0) {
+                    dest_account = &account_list[i];
+                    dest_found = 1;
                 }
             }
-            if (dest_found != 1 && strncmp(account_list[i].account_number, dest_account_number, 17) == 0) {
-                dest_account = &account_list[i];
-                dest_found = 1;
+
+            if (password_match == 1 && src_found == 1 && dest_found == 1) {
+                pthread_mutex_lock(&src_account->ac_lock);
+                src_account->balance -= atof(amount);
+                src_account->transaction_tracter += atof(amount);
+                pthread_mutex_unlock(&src_account->ac_lock);
+                pthread_mutex_lock(&dest_account->ac_lock);
+                dest_account->balance += atof(amount);
+                pthread_mutex_unlock(&dest_account->ac_lock);
+                num_t++;
+            } else {
+                printf("T Error: invalid account info.\n");
+                num_f++;
             }
         }
+        // if transaction is check balance
+        else if (strncmp(transaction.command_list[0], "C", 1) == 0) {
+            src_account_number = transaction.command_list[1];
+            password = transaction.command_list[2];
 
-        if (password_match == 1 && src_found == 1 && dest_found == 1) {
-            pthread_mutex_lock(&src_account->ac_lock);
-            src_account->balance -= atof(amount);
-            src_account->transaction_tracter += atof(amount);
-            pthread_mutex_unlock(&src_account->ac_lock);
-            pthread_mutex_lock(&dest_account->ac_lock);
-            dest_account->balance += atof(amount);
-            pthread_mutex_unlock(&dest_account->ac_lock);
-            num_t++;
-        } else {
-            printf("T Error: invalid account info.\n");
-            num_f++;
-        }
-    }
-    // if transaction is check balance
-    else if (strncmp(type, "C", 1) == 0) {
-        src_account_number = transaction->command_list[1];
-        password = transaction->command_list[2];
-
-        for (int i = 0; i < number_of_accounts; i++) {
-            if (src_found != 1 && strncmp(account_list[i].account_number, src_account_number, 17) == 0) {
-                src_account = &account_list[i];
-                src_found = 1;
-                if (strncmp(account_list[i].password, password, 9) != 0) {
-                    printf("Error: invalid password, account number: %s\n", src_account_number);
-                    break;
-                } else {
-                    password_match = 1;
+            for (int i = 0; i < number_of_accounts; i++) {
+                if (src_found != 1 && strncmp(account_list[i].account_number, src_account_number, 17) == 0) {
+                    src_account = &account_list[i];
+                    src_found = 1;
+                    if (strncmp(account_list[i].password, password, 9) != 0) {
+                        printf("Error: invalid password, account number: %s\n", src_account_number);
+                        break;
+                    } else {
+                        password_match = 1;
+                    }
                 }
             }
-        }
 
-        if (password_match == 1 && src_found == 1) {
-            pthread_mutex_lock(&src_account->ac_lock);
-            printf("Account: %s: balance: %f\n", src_account_number, src_account->balance);
-            pthread_mutex_unlock(&src_account->ac_lock);
-            num_c++;
-        } else {
-            printf("C Error: invalid account info.\n");
-            num_f++;
-        }
-    }
-    // if transaction is deposit
-    else if (strncmp(type, "D", 1) == 0) {
-        src_account_number = transaction->command_list[1];
-        password = transaction->command_list[2];
-        amount = transaction->command_list[3];
-
-        for (int i = 0; i < number_of_accounts; i++) {
-            if (src_found != 1 && strncmp(account_list[i].account_number, src_account_number, 17) == 0) {
-                src_account = &account_list[i];
-                src_found = 1;
-                if (strncmp(account_list[i].password, password, 9) != 0) {
-                    printf("Error: invalid password, account number: %s\n", src_account_number);
-                    break;
-                } else {
-                    password_match = 1;
-                }
+            if (password_match == 1 && src_found == 1) {
+                pthread_mutex_lock(&src_account->ac_lock);
+                printf("Account: %s: balance: %f\n", src_account_number, src_account->balance);
+                pthread_mutex_unlock(&src_account->ac_lock);
+                num_c++;
+            } else {
+                printf("C Error: invalid account info.\n");
+                num_f++;
             }
         }
+        // if transaction is deposit
+        else if (strncmp(transaction.command_list[0], "D", 1) == 0) {
+            src_account_number = transaction.command_list[1];
+            password = transaction.command_list[2];
+            amount = transaction.command_list[3];
 
-        if (password_match == 1 && src_found == 1) {
-            pthread_mutex_lock(&src_account->ac_lock);
-            src_account->balance += atof(amount);
-            src_account->transaction_tracter += atof(amount);
-            pthread_mutex_unlock(&src_account->ac_lock);
-            num_d++;
-        } else {
-            printf("D Error: invalid account info.\n");
-            num_f++;
-        }
-    }
-    // if transaction is withdraw
-    else if (strncmp(type, "W", 1) == 0) {
-        src_account_number = transaction->command_list[1];
-        password = transaction->command_list[2];
-        amount = transaction->command_list[3];
-
-        for (int i = 0; i < number_of_accounts; i++) {
-            if (src_found != 1 && strncmp(account_list[i].account_number, src_account_number, 17) == 0) {
-                src_account = &account_list[i];
-                src_found = 1;
-                if (strncmp(account_list[i].password, password, 9) != 0) {
-                    printf("Error: invalid password, account number: %s\n", src_account_number);
-                    break;
-                } else {
-                    password_match = 1;
+            for (int i = 0; i < number_of_accounts; i++) {
+                if (src_found != 1 && strncmp(account_list[i].account_number, src_account_number, 17) == 0) {
+                    src_account = &account_list[i];
+                    src_found = 1;
+                    if (strncmp(account_list[i].password, password, 9) != 0) {
+                        printf("Error: invalid password, account number: %s\n", src_account_number);
+                        break;
+                    } else {
+                        password_match = 1;
+                    }
                 }
             }
-        }
 
-        if (password_match == 1 && src_found == 1) {
-            pthread_mutex_lock(&src_account->ac_lock);
-            src_account->balance -= atof(amount);
-            src_account->transaction_tracter += atof(amount);
-            pthread_mutex_unlock(&src_account->ac_lock);
-            num_w++;
-        } else {
-            printf("W Error: invalid account info.\n");
+            if (password_match == 1 && src_found == 1) {
+                pthread_mutex_lock(&src_account->ac_lock);
+                src_account->balance += atof(amount);
+                src_account->transaction_tracter += atof(amount);
+                pthread_mutex_unlock(&src_account->ac_lock);
+                num_d++;
+            } else {
+                printf("D Error: invalid account info.\n");
+                num_f++;
+            }
+        }
+        // if transaction is withdraw
+        else if (strncmp(transaction.command_list[0], "W", 1) == 0) {
+            src_account_number = transaction.command_list[1];
+            password = transaction.command_list[2];
+            amount = transaction.command_list[3];
+
+            for (int i = 0; i < number_of_accounts; i++) {
+                if (src_found != 1 && strncmp(account_list[i].account_number, src_account_number, 17) == 0) {
+                    src_account = &account_list[i];
+                    src_found = 1;
+                    if (strncmp(account_list[i].password, password, 9) != 0) {
+                        printf("Error: invalid password, account number: %s\n", src_account_number);
+                        break;
+                    } else {
+                        password_match = 1;
+                    }
+                }
+            }
+
+            if (password_match == 1 && src_found == 1) {
+                pthread_mutex_lock(&src_account->ac_lock);
+                src_account->balance -= atof(amount);
+                src_account->transaction_tracter += atof(amount);
+                pthread_mutex_unlock(&src_account->ac_lock);
+                num_w++;
+            } else {
+                printf("W Error: invalid account info.\n");
+                num_f++;
+            }
+        }
+        // else invalid transaction
+        else {
+            printf("Error: Transaction type is invalid.\n");
             num_f++;
         }
-    }
-    // else invalid transaction
-    else {
-        printf("Error: Transaction type is invalid.\n");
-        num_f++;
+        current_transaction++;
+        free_command_line(&transaction);
     }
 
-    return (void*) transaction;
+    pthread_exit(NULL);
+
+    return NULL;
 }
 
 void* update_balance(void* arg) {

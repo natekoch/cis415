@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-g -pthread -lpthread
+CFLAGS=-g -pthread -lpthread -lm
 DEPS = string_parser.h bank.h account.h
 OBJECTS = part1.o part2.o string_parser.o
 PROGRAMS = part1 part2

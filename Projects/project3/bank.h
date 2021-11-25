@@ -11,7 +11,7 @@ void* create_output_file();
 void* spawn_threads();
 
 typedef struct {
-    char** transactions;
+    command_line* transactions;
 }transaction_arg;
 
 #endif
