@@ -94,7 +94,8 @@ int main(int argc, char *argv[]) {
     exit(EXIT_SUCCESS);
 }
 
-void* process_transaction(command_line* transaction) {
+void* process_transaction(void* arg) {
+    command_line* transaction = arg;
     // check for transaction type
     char type[1];
     strncpy(type, transaction->command_list[0], 1);
@@ -120,7 +121,6 @@ void* process_transaction(command_line* transaction) {
                 src_account = &account_list[i];
                 src_found = 1;
                 if (strncmp(account_list[i].password, password, 9) != 0) {
-                    printf("%s - %s\n", account_list[i].password, password);
                     printf("Error: invalid password, account number: %s\n", src_account_number);
                     break;
                 } else {
@@ -139,7 +139,6 @@ void* process_transaction(command_line* transaction) {
             dest_account->balance += atof(amount);
             num_t++;
         } else {
-            printf("pswd: %d; sf: %d; df: %d\n", password_match, src_found, dest_found);
             printf("T Error: invalid account info.\n");
             num_f++;
         }
