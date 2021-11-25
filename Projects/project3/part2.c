@@ -216,7 +216,7 @@ void* process_transaction(void* arg) {
         dest_found = 0;
         password_match = 0; 
         transaction = transactions->transactions[current_transaction];
-        printf("%s\n", transaction.command_list[0]);
+        
         // if transaction is transfer
         if (strncmp(transaction.command_list[0], "T", 1) == 0) {
             src_account_number = transaction.command_list[1];
@@ -349,7 +349,6 @@ void* process_transaction(void* arg) {
             num_f++;
         }
         current_transaction++;
-        free_command_line(&transaction);
     }
 
     pthread_exit(NULL);
