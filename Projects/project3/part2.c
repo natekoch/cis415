@@ -145,17 +145,16 @@ void* read_transactions(char*** input_lines) {
     int current_line = start_line;
     int transaction_line = 0;
     double num_transactions_per_thread = ceil(num_transactions/NUM_THREADS);
-    command_line transaction;
     int error;
-    transaction_arg* split_transactions = malloc(sizeof(transaction_arg) * NUM_THREADS);
+    command_line** split_transactions = malloc(sizeof(command_line*) * NUM_THREADS);
 
-    // TODO: populate transaction structs
+    // TODO: populate split_transactions
     while (lines[current_line] != NULL) {
         if (transaction_line == 0) {
-            split_transactions[current_thread].transactions = malloc (sizeof(char*));
+            split_transactions[current_thread] = malloc (sizeof(command_line) * num_transactions_per_thread);
             transaction_line++;
         } else if (transaction_line <= num_transactions_per_thread) {
-            split_transactions[current_thread].transactions[transaction_line-1] = 
+            split_transactions[current_thread][transaction_line-1] = 
                 str_filler(lines[current_line], " ");
             transaction_line++;
             current_line++;
@@ -180,7 +179,8 @@ void* read_transactions(char*** input_lines) {
 
     for (int i = 0; i < NUM_THREADS; i++) {
         for (int j = 0; i < num_transactions_per_thread; j++) {
-            free_command_line(&split_transactions[i].transactions[j]);
+            if (&split_transactions[i][j] != NULL)
+                free_command_line(&split_transactions[i][j]);
         }
     }
     free(split_transactions);
