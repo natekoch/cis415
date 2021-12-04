@@ -39,18 +39,20 @@ int main(int argc,char*argv[]) {
         pid_array[i] = fork();
         if (pid_array[i] < 0) {
             perror("fork");
-        } else if (pid_array[i] == 0) {
+        if (pid_array[i] == 0) {
             if (execvp("./iobound", argList) == -1) {
                 perror("execvp");
             }
             exit(-1);
-        } else {
-            waitpid(pid_array[i], NULL, 0);
-        }
     }
+
 
     /* --- task 5 --- */
     script_print(pid_array, n);
+
+    for (int i = 0; i < n; i++) {
+        waitpid(pid_array[i], NULL, 0);
+    }
 
     free(pid_array);
     exit(0);

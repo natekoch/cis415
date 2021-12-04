@@ -10,7 +10,6 @@ int main () {
 
     freopen("output.txt", "w+", stdout);
 
-
     // -------------------------------
     // Using fopen ----------- DO NOT USE fopen in command.c file in project
     char *buf = NULL;
