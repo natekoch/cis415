@@ -189,9 +189,9 @@ void* read_transactions(char*** input_lines) {
 void* process_transaction(void* arg) {
     transaction_arg* transactions = arg;
     printf("%s\n", transactions->transactions[0].command_list[0]);
-    command_line transaction;
+    command_line* transaction = NULL;
     // check for transaction type
-    char type[1];
+    //char type[1];
     int current_transaction = 0;
     account* src_account;
     account* dest_account;
@@ -215,14 +215,15 @@ void* process_transaction(void* arg) {
         src_found = 0;
         dest_found = 0;
         password_match = 0; 
-        transaction = transactions->transactions[current_transaction];
+        transaction = &transactions->transactions[current_transaction];
         
         // if transaction is transfer
-        if (strncmp(transaction.command_list[0], "T", 1) == 0) {
-            src_account_number = transaction.command_list[1];
-            password = transaction.command_list[2];
-            dest_account_number = transaction.command_list[3];
-            amount = transaction.command_list[4];
+        printf("%s\n", transaction->command_list[0]);
+        if (strncmp(transaction->command_list[0], "T", 1) == 0) {
+            src_account_number = transaction->command_list[1];
+            password = transaction->command_list[2];
+            dest_account_number = transaction->command_list[3];
+            amount = transaction->command_list[4];
 
             for (int i = 0; i < number_of_accounts; i++) {
                 if (src_found != 1 && strncmp(account_list[i].account_number, src_account_number, 17) == 0) {
@@ -256,9 +257,9 @@ void* process_transaction(void* arg) {
             }
         }
         // if transaction is check balance
-        else if (strncmp(transaction.command_list[0], "C", 1) == 0) {
-            src_account_number = transaction.command_list[1];
-            password = transaction.command_list[2];
+        else if (strncmp(transaction->command_list[0], "C", 1) == 0) {
+            src_account_number = transaction->command_list[1];
+            password = transaction->command_list[2];
 
             for (int i = 0; i < number_of_accounts; i++) {
                 if (src_found != 1 && strncmp(account_list[i].account_number, src_account_number, 17) == 0) {
@@ -284,10 +285,10 @@ void* process_transaction(void* arg) {
             }
         }
         // if transaction is deposit
-        else if (strncmp(transaction.command_list[0], "D", 1) == 0) {
-            src_account_number = transaction.command_list[1];
-            password = transaction.command_list[2];
-            amount = transaction.command_list[3];
+        else if (strncmp(transaction->command_list[0], "D", 1) == 0) {
+            src_account_number = transaction->command_list[1];
+            password = transaction->command_list[2];
+            amount = transaction->command_list[3];
 
             for (int i = 0; i < number_of_accounts; i++) {
                 if (src_found != 1 && strncmp(account_list[i].account_number, src_account_number, 17) == 0) {
@@ -314,10 +315,10 @@ void* process_transaction(void* arg) {
             }
         }
         // if transaction is withdraw
-        else if (strncmp(transaction.command_list[0], "W", 1) == 0) {
-            src_account_number = transaction.command_list[1];
-            password = transaction.command_list[2];
-            amount = transaction.command_list[3];
+        else if (strncmp(transaction->command_list[0], "W", 1) == 0) {
+            src_account_number = transaction->command_list[1];
+            password = transaction->command_list[2];
+            amount = transaction->command_list[3];
 
             for (int i = 0; i < number_of_accounts; i++) {
                 if (src_found != 1 && strncmp(account_list[i].account_number, src_account_number, 17) == 0) {
