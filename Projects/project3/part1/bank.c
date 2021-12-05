@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include "string_parser.h"
 #include "account.h"
 #include "bank.h"
@@ -80,18 +82,34 @@ int main(int argc, char *argv[]) {
     printf("W: %d\n", num_w);
     printf("F: %d\n", num_f);
 
-    FILE* FPout = NULL;
-    FPout = fopen("output.txt", "w+");
-    for (int i = 0; i < number_of_accounts; i++) {
-        fprintf(FPout, "%d balance:\t%.2f\n\n", i, account_list[i].balance);
-    }
+    create_output_directory();
 
     free(account_list);
     free(line_buf);
     fclose(FPin);
-    fclose(FPout);
 
     exit(EXIT_SUCCESS);
+}
+
+void* create_output_directory() {
+    FILE* FPacct_out = NULL;
+    FILE* FPout = NULL;
+    mkdir("Output", S_IRWXU);
+    chdir("Output");
+    FPout = fopen("output.txt", "w+");
+    char output_fname[32];
+    for (int i = 0; i < number_of_accounts; i++) {
+        sprintf(output_fname, "account%d.txt", i);
+        FPacct_out = fopen(output_fname, "w+");
+        fprintf(FPout, "%d balance:\t%.2f\n\n", i, account_list[i].balance);
+        fprintf(FPacct_out, "account %d:\n", i);
+        fprintf(FPacct_out, "Current Balance:\t%.2f\n", account_list[i].balance);
+        if (FPacct_out) fclose(FPacct_out);
+        FPacct_out = NULL;
+        memset(&output_fname[0], 0, sizeof(output_fname));
+    }
+    if (FPout) fclose(FPout);
+    return NULL;
 }
 
 void* process_transaction(void* arg) {
