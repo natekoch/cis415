@@ -4,6 +4,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <math.h>
+#include <sys/stat.h>
 #include "string_parser.h"
 #include "account.h"
 #include "bank.h"
@@ -33,7 +34,7 @@ int main(int argc, char *argv[]) {
     
     update_balance(NULL);
 
-    create_output_file();
+    create_output_directory();
 
     printf("T: %d\n", num_t);
     printf("D: %d\n", num_d);
@@ -86,13 +87,19 @@ char** read_input_file(int num_args, char** arg_list) {
     return output_strings;
 }
 
-void* create_output_file() {
+void* create_output_directory() {
     FILE* FPout = NULL;
-    FPout = fopen("output.txt", "w+");
+    mkdir("Output", S_IRWXU);
+    chdir("Output");
+    char output_fname[32] = "output";
     for (int i = 0; i < number_of_accounts; i++) {
+        sprintf(output_fname, "%d.txt", i);
+        FPout = fopen("", "w+");
         fprintf(FPout, "%d balance:\t%.2f\n\n", i, account_list[i].balance);
+        if (FPout) fclose(FPout);
+        FPout = NULL;
+        memset(&output_fname[0], 0, sizeof(output_fname));
     }
-    if (FPout) fclose(FPout);
     return NULL;
 }
 
@@ -148,7 +155,7 @@ void* read_transactions(char*** input_lines) {
     int error;
     command_line** split_transactions = malloc(sizeof(command_line*) * NUM_THREADS);
 
-    // TODO: populate split_transactions
+    // populate split_transactions giving each thread the same amount of threads each. 
     while (lines[current_line] != NULL) {
         if (transaction_line == 0) {
             split_transactions[current_thread] = malloc (sizeof(command_line) * num_transactions_per_thread);
@@ -163,7 +170,6 @@ void* read_transactions(char*** input_lines) {
             current_thread++;
         }
     }
-
     
     for (int i = 0; i < NUM_THREADS; i++) {
         error = pthread_create(&(tid[i]), 
@@ -175,7 +181,6 @@ void* read_transactions(char*** input_lines) {
     for (int i = 0; i < NUM_THREADS; i++) {
         pthread_join(tid[i], NULL);
     }
-
     
     for (int i = 0; i < NUM_THREADS; i++) {
         for (int j = 0; j < num_transactions_per_thread; j++) {
@@ -204,8 +209,6 @@ void* process_transaction(void* arg) {
     int dest_found = 0;
     int password_match = 0; 
     
-
-    // TODO: go from arg to command lines need a loop
     while (transactions[current_transaction].command_list != NULL) {
         // Reset variables
         src_account = NULL;
