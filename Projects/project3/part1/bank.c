@@ -10,13 +10,6 @@
 int number_of_accounts = 0;
 account* account_list;
 
-//temp test values;
-int num_t = 0;
-int num_d = 0;
-int num_w = 0;
-int num_c = 0;
-int num_f = 0;
-
 int main(int argc, char *argv[]) {
     FILE* FPin = NULL;
     // open file and argument error handling
@@ -76,11 +69,6 @@ int main(int argc, char *argv[]) {
         line_number++;
     }
     update_balance(NULL);
-    printf("T: %d\n", num_t);
-    printf("D: %d\n", num_d);
-    printf("C: %d\n", num_c);
-    printf("W: %d\n", num_w);
-    printf("F: %d\n", num_f);
 
     create_output_directory();
 
@@ -155,10 +143,8 @@ void* process_transaction(void* arg) {
             src_account->balance -= atof(amount);
             src_account->transaction_tracter += atof(amount);
             dest_account->balance += atof(amount);
-            num_t++;
         } else {
             printf("T Error: invalid account info.\n");
-            num_f++;
         }
     }
     // if transaction is check balance
@@ -181,10 +167,8 @@ void* process_transaction(void* arg) {
 
         if (password_match == 1 && src_found == 1) {
             printf("Account: %s: balance: %f\n", src_account_number, src_account->balance);
-            num_c++;
         } else {
             printf("C Error: invalid account info.\n");
-            num_f++;
         }
     }
     // if transaction is deposit
@@ -209,10 +193,8 @@ void* process_transaction(void* arg) {
         if (password_match == 1 && src_found == 1) {
             src_account->balance += atof(amount);
             src_account->transaction_tracter += atof(amount);
-            num_d++;
         } else {
             printf("D Error: invalid account info.\n");
-            num_f++;
         }
     }
     // if transaction is withdraw
@@ -237,16 +219,13 @@ void* process_transaction(void* arg) {
         if (password_match == 1 && src_found == 1) {
             src_account->balance -= atof(amount);
             src_account->transaction_tracter += atof(amount);
-            num_w++;
         } else {
             printf("W Error: invalid account info.\n");
-            num_f++;
         }
     }
     // else invalid transaction
     else {
         printf("Error: Transaction type is invalid.\n");
-        num_f++;
     }
 
     return (void*) transaction;
