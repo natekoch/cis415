@@ -16,12 +16,14 @@ pthread_t tid[NUM_THREADS], bank_tid;
 
 int counter = 0;
 int waiting_thread_count = 0;
+int alive_threads = 0;
 
 pthread_barrier_t sync_barrier;
 
 pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER; // lock for conditional wake up
 pthread_cond_t condition = PTHREAD_COND_INITIALIZER; // condition for conditional wake up
 pthread_mutex_t lock_counter = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t lock_alive = PTHREAD_MUTEX_INITIALIZER;
 
 int number_of_accounts = 0;
 account* account_list;
@@ -433,6 +435,9 @@ void* process_transaction(void* arg) {
             pthread_mutex_unlock(&mtx);
         }
     }
+    pthread_mutex_lock(&lock_alive);
+    alive_threads--;
+    pthread_mutex_unlock(&lock_alive);
     pthread_exit(NULL);
 
     return NULL;
