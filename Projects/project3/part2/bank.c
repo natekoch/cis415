@@ -31,8 +31,6 @@ int main(int argc, char *argv[]) {
     create_accounts(&input_lines);
     
     read_transactions(&input_lines);
-    
-    update_balance(NULL);
 
     create_output_directory();
 
@@ -205,6 +203,14 @@ void* read_transactions(char*** input_lines) {
         pthread_join(tid[i], &res);
         free(res);
     }
+
+    pthread_t bank_tid;
+    pthread_create(&bank_tid, 
+                    NULL, 
+                    &update_balance,
+                    NULL);
+    pthread_join(bank_tid, &res);
+    free(res);
     
     for (int i = 0; i < NUM_THREADS; i++) {
         for (int j = 0; j < num_transactions_per_thread; j++) {
