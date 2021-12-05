@@ -12,8 +12,4 @@ void* update_account_files();
 void* create_output_file();
 void* spawn_threads();
 
-typedef struct {
-    command_line* transactions;
-}transaction_arg;
-
 #endif
