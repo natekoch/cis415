@@ -25,8 +25,8 @@ int num_c = 0;
 int num_f = 0;
 
 int main(int argc, char *argv[]) {
-    char** input_lines;
-    input_lines = read_input_file(argc, argv);
+    char** input_lines = NULL;
+    read_input_file(argc, argv, &input_lines);
 
     create_accounts(&input_lines);
     
@@ -42,17 +42,19 @@ int main(int argc, char *argv[]) {
     printf("W: %d\n", num_w);
     printf("F: %d\n", num_f);
 
+    for (int i = 0; i < total_lines; i++) {
+        free(input_lines[i]);
+    }
     free(input_lines);
     free(account_list);
 
     exit(EXIT_SUCCESS);
 }
 
-char** read_input_file(int num_args, char** arg_list) {
+void* read_input_file(int num_args, char** arg_list, char*** lines) {
     FILE* FPin = NULL;
     size_t len = 512;
     char* line_buf = malloc (len);
-    char** output_strings = malloc(sizeof(char*));
 
     // open file and argument error handling
     if (num_args == 2) {
@@ -67,39 +69,60 @@ char** read_input_file(int num_args, char** arg_list) {
     }
 
     int line_number = 0;
-    command_line line; 
     int current_account = 0;
     int current_account_value = 0;
     char* stripped_line;
 
     // loop through file
+    /*
+    while (getline(&line_buf, &len, FPin) != -1) {
+        total_lines++;
+    }
+    if (FPin) fclose(FPin);
+    // reopen the file to reset the pointer
+    FPin = fopen(arg_list[1], "r");
+    if (FPin == NULL) {
+        perror("fopen: ");
+        exit(-1);
+    }
+    *lines = malloc(sizeof(char*) * total_lines);
+    while (getline (&line_buf, &len, FPin) != -1) {
+        *lines[line_number] = strdup(line_buf);
+        line_number++;
+    }
+    */
+    *lines = malloc(sizeof(char*));
     while (getline (&line_buf, &len, FPin) != -1) {
         if (line_number != 0) {
-            output_strings = realloc(output_strings, (line_number + 1) * sizeof(char *));
+            *lines = realloc(*lines, (line_number + 1) * sizeof(char *));
         }
-        output_strings[line_number] = strdup(line_buf);
+        lines[0][line_number] = strdup(line_buf);
         line_number++;
         total_lines++;
     }
-
     if (FPin) fclose(FPin);
 
-    return output_strings;
+    return NULL;
 }
 
 void* create_output_directory() {
+    FILE* FPacct_out = NULL;
     FILE* FPout = NULL;
     mkdir("Output", S_IRWXU);
     chdir("Output");
-    char output_fname[32] = "output";
+    FPout = fopen("output.txt", "w+");
+    char output_fname[32];
     for (int i = 0; i < number_of_accounts; i++) {
-        sprintf(output_fname, "%d.txt", i);
-        FPout = fopen("", "w+");
+        sprintf(output_fname, "account%d.txt", i);
+        FPacct_out = fopen(output_fname, "w+");
         fprintf(FPout, "%d balance:\t%.2f\n\n", i, account_list[i].balance);
-        if (FPout) fclose(FPout);
-        FPout = NULL;
+        fprintf(FPacct_out, "account %d:\n", i);
+        fprintf(FPacct_out, "Current Balance:\t%.2f\n", account_list[i].balance);
+        if (FPacct_out) fclose(FPacct_out);
+        FPacct_out = NULL;
         memset(&output_fname[0], 0, sizeof(output_fname));
     }
+    if (FPout) fclose(FPout);
     return NULL;
 }
 
@@ -177,9 +200,10 @@ void* read_transactions(char*** input_lines) {
                                 &process_transaction, 
                                 (void*)&(split_transactions[i]));
     }
-    
+    void* res;
     for (int i = 0; i < NUM_THREADS; i++) {
-        pthread_join(tid[i], NULL);
+        pthread_join(tid[i], &res);
+        free(res);
     }
     
     for (int i = 0; i < NUM_THREADS; i++) {
@@ -188,16 +212,16 @@ void* read_transactions(char*** input_lines) {
                 free_command_line(&split_transactions[i][j]);
         }
         free(split_transactions[i]);
-    }
-    
+    } 
     free(split_transactions);
+
+    return NULL;
 }
 
 void* process_transaction(void* arg) {
-    command_line** transactions_ptr = arg;
+    command_line** transactions_ptr = (command_line**) arg;
     command_line* transactions = *transactions_ptr;
-    //printf("%s\n", transactions[0].command_list[0]);
-    command_line transaction;
+    //command_line* transaction;
     int current_transaction = 0;
     account* src_account;
     account* dest_account;
@@ -220,15 +244,15 @@ void* process_transaction(void* arg) {
         src_found = 0;
         dest_found = 0;
         password_match = 0; 
-        transaction = transactions[current_transaction];
+        //transaction = &transactions[current_transaction];
         
         // if transaction is transfer
-        printf("%s\n", transaction.command_list[0]);
-        if (strncmp(transaction.command_list[0], "T", 1) == 0) {
-            src_account_number = transaction.command_list[1];
-            password = transaction.command_list[2];
-            dest_account_number = transaction.command_list[3];
-            amount = transaction.command_list[4];
+        printf("%s\n", transactions[current_transaction].command_list[0]);
+        if (strncmp(transactions[current_transaction].command_list[0], "T", 1) == 0) {
+            src_account_number = transactions[current_transaction].command_list[1];
+            password = transactions[current_transaction].command_list[2];
+            dest_account_number = transactions[current_transaction].command_list[3];
+            amount = transactions[current_transaction].command_list[4];
 
             for (int i = 0; i < number_of_accounts; i++) {
                 if (src_found != 1 && strncmp(account_list[i].account_number, src_account_number, 17) == 0) {
@@ -262,9 +286,9 @@ void* process_transaction(void* arg) {
             }
         }
         // if transaction is check balance
-        else if (strncmp(transaction.command_list[0], "C", 1) == 0) {
-            src_account_number = transaction.command_list[1];
-            password = transaction.command_list[2];
+        else if (strncmp(transactions[current_transaction].command_list[0], "C", 1) == 0) {
+            src_account_number = transactions[current_transaction].command_list[1];
+            password = transactions[current_transaction].command_list[2];
 
             for (int i = 0; i < number_of_accounts; i++) {
                 if (src_found != 1 && strncmp(account_list[i].account_number, src_account_number, 17) == 0) {
@@ -290,10 +314,10 @@ void* process_transaction(void* arg) {
             }
         }
         // if transaction is deposit
-        else if (strncmp(transaction.command_list[0], "D", 1) == 0) {
-            src_account_number = transaction.command_list[1];
-            password = transaction.command_list[2];
-            amount = transaction.command_list[3];
+        else if (strncmp(transactions[current_transaction].command_list[0], "D", 1) == 0) {
+            src_account_number = transactions[current_transaction].command_list[1];
+            password = transactions[current_transaction].command_list[2];
+            amount = transactions[current_transaction].command_list[3];
 
             for (int i = 0; i < number_of_accounts; i++) {
                 if (src_found != 1 && strncmp(account_list[i].account_number, src_account_number, 17) == 0) {
@@ -320,10 +344,10 @@ void* process_transaction(void* arg) {
             }
         }
         // if transaction is withdraw
-        else if (strncmp(transaction.command_list[0], "W", 1) == 0) {
-            src_account_number = transaction.command_list[1];
-            password = transaction.command_list[2];
-            amount = transaction.command_list[3];
+        else if (strncmp(transactions[current_transaction].command_list[0], "W", 1) == 0) {
+            src_account_number = transactions[current_transaction].command_list[1];
+            password = transactions[current_transaction].command_list[2];
+            amount = transactions[current_transaction].command_list[3];
 
             for (int i = 0; i < number_of_accounts; i++) {
                 if (src_found != 1 && strncmp(account_list[i].account_number, src_account_number, 17) == 0) {
