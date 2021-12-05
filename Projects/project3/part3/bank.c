@@ -1,8 +1,8 @@
 #include <pthread.h>
+#include <sched.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <sys/_pthread/_pthread_mutex_t.h>
 #include <unistd.h>
 #include <math.h>
 #include <sys/stat.h>
@@ -273,7 +273,9 @@ void* process_transaction(void* arg) {
     int dest_found = 0;
     int password_match = 0; 
 
+    printf("Worker Thread : %lu created but waiting\n", pthread_self());
     pthread_barrier_wait(&sync_barrier);
+    printf("Worker Thread : %lu started working\n", pthread_self());
     
     while (transactions[current_transaction].command_list != NULL) {
         // Reset variables
@@ -324,7 +326,7 @@ void* process_transaction(void* arg) {
                 // update counter
                 pthread_mutex_lock(&lock_counter);
                 counter++;
-                pthread_mutex_lock(&lock_counter);
+                pthread_mutex_unlock(&lock_counter);
             } else {
                 printf("T Error: invalid account info.\n");
             }
@@ -383,7 +385,7 @@ void* process_transaction(void* arg) {
                 // update counter
                 pthread_mutex_lock(&lock_counter);
                 counter++;
-                pthread_mutex_lock(&lock_counter);
+                pthread_mutex_unlock(&lock_counter);
             } else {
                 printf("D Error: invalid account info.\n");
             }
@@ -416,7 +418,7 @@ void* process_transaction(void* arg) {
                 // update counter
                 pthread_mutex_lock(&lock_counter);
                 counter++;
-                pthread_mutex_lock(&lock_counter);
+                pthread_mutex_unlock(&lock_counter);
             } else {
                 printf("W Error: invalid account info.\n");
             }
@@ -427,11 +429,13 @@ void* process_transaction(void* arg) {
         }
         current_transaction++;
         if (counter == 5000) {
+            printf("\n!!!!!!5000!!!!!!\n");
             pthread_mutex_lock(&mtx);
             waiting_thread_count++;
             pthread_cond_wait(&condition, &mtx);
             pthread_mutex_unlock(&mtx);
         }
+        printf("%d\n", counter);
     }
     pthread_exit(NULL);
 
@@ -439,19 +443,26 @@ void* process_transaction(void* arg) {
 }
 
 void* update_balance(void* arg) {
+    printf("Bank Thread : %lu created but waiting\n", pthread_self());
     pthread_barrier_wait(&sync_barrier);
+    printf("Bank Thread : %lu started working\n", pthread_self());
+    while (1) {
+        if (waiting_thread_count >= NUM_THREADS) {
+            pthread_mutex_lock(&mtx);
+            for (int i = 0; i < number_of_accounts; i++) {
+                pthread_mutex_lock(&account_list[i].ac_lock);
+                account_list[i].balance += 
+                    account_list[i].transaction_tracter * account_list[i].reward_rate;
+                pthread_mutex_unlock(&account_list[i].ac_lock);
+            }
+            update_account_files();
+            counter = 0;
+            pthread_cond_broadcast(&condition);
 
-    pthread_mutex_lock(&mtx);
-    for (int i = 0; i < number_of_accounts; i++) {
-        pthread_mutex_lock(&account_list[i].ac_lock);
-        account_list[i].balance += 
-            account_list[i].transaction_tracter * account_list[i].reward_rate;
-        pthread_mutex_unlock(&account_list[i].ac_lock);
+            pthread_mutex_unlock(&mtx);
+        }
+        sched_yield();
     }
-    update_account_files();
-    counter = 0;
-    pthread_cond_broadcast(&condition);
-
-    pthread_mutex_unlock(&mtx);
+    pthread_exit(NULL);
     return NULL;
 }
