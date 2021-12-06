@@ -17,6 +17,8 @@ int number_of_accounts = 0;
 account* account_list;
 int total_lines = 0;
 
+double num_transactions_per_thread = 0;
+
 int main(int argc, char *argv[]) {
     char** input_lines = NULL;
     read_input_file(argc, argv, &input_lines);
@@ -145,22 +147,22 @@ void* create_accounts(char*** input_lines) {
 void* read_transactions(char*** input_lines) {
     double num_transactions = total_lines-(number_of_accounts*5)-1;
     int current_thread = 0;
-    char** lines = *input_lines;
+    //char** lines = *input_lines;
     int start_line = number_of_accounts*5+1;
     int current_line = start_line;
     int transaction_line = 0;
-    double num_transactions_per_thread = ceil(num_transactions/NUM_THREADS);
+    num_transactions_per_thread = ceil(num_transactions/NUM_THREADS);
     int error;
     command_line** split_transactions = malloc(sizeof(command_line*) * NUM_THREADS);
 
     // populate split_transactions giving each thread the same amount of threads each. 
-    while (lines[current_line] != NULL) {
+    while (current_line < total_lines) {
         if (transaction_line == 0) {
             split_transactions[current_thread] = malloc (sizeof(command_line) * num_transactions_per_thread);
             transaction_line++;
         } else if (transaction_line <= num_transactions_per_thread) {
             split_transactions[current_thread][transaction_line-1] = 
-                str_filler(lines[current_line], " ");
+                str_filler(input_lines[0][current_line], " ");
             transaction_line++;
             current_line++;
         } else {
@@ -214,8 +216,10 @@ void* process_transaction(void* arg) {
     int src_found = 0;
     int dest_found = 0;
     int password_match = 0; 
+
+    printf("Worker Thread : %lu running\n", pthread_self());
     
-    while (transactions[current_transaction].command_list != NULL) {
+    while (current_transaction < num_transactions_per_thread && transactions[current_transaction].command_list != NULL) {
         // Reset variables
         src_account = NULL;
         dest_account = NULL;
@@ -239,7 +243,7 @@ void* process_transaction(void* arg) {
                     src_account = &account_list[i];
                     src_found = 1;
                     if (strncmp(account_list[i].password, password, 9) != 0) {
-                        printf("Error: invalid password, account number: %s\n", src_account_number);
+                        //printf("Error: invalid password, account number: %s\n", src_account_number);
                         break;
                     } else {
                         password_match = 1;
@@ -260,7 +264,7 @@ void* process_transaction(void* arg) {
                 dest_account->balance += atof(amount);
                 pthread_mutex_unlock(&dest_account->ac_lock);
             } else {
-                printf("T Error: invalid account info.\n");
+                //printf("T Error: invalid account info.\n");
             }
         }
         // if transaction is check balance
@@ -273,7 +277,7 @@ void* process_transaction(void* arg) {
                     src_account = &account_list[i];
                     src_found = 1;
                     if (strncmp(account_list[i].password, password, 9) != 0) {
-                        printf("Error: invalid password, account number: %s\n", src_account_number);
+                        //printf("Error: invalid password, account number: %s\n", src_account_number);
                         break;
                     } else {
                         password_match = 1;
@@ -282,11 +286,11 @@ void* process_transaction(void* arg) {
             }
 
             if (password_match == 1 && src_found == 1) {
-                pthread_mutex_lock(&src_account->ac_lock);
-                printf("Account: %s: balance: %f\n", src_account_number, src_account->balance);
-                pthread_mutex_unlock(&src_account->ac_lock);
+                //pthread_mutex_lock(&src_account->ac_lock);
+                //printf("Account: %s: balance: %f\n", src_account_number, src_account->balance);
+                //pthread_mutex_unlock(&src_account->ac_lock);
             } else {
-                printf("C Error: invalid account info.\n");
+                //printf("C Error: invalid account info.\n");
             }
         }
         // if transaction is deposit
@@ -300,7 +304,7 @@ void* process_transaction(void* arg) {
                     src_account = &account_list[i];
                     src_found = 1;
                     if (strncmp(account_list[i].password, password, 9) != 0) {
-                        printf("Error: invalid password, account number: %s\n", src_account_number);
+                        //printf("Error: invalid password, account number: %s\n", src_account_number);
                         break;
                     } else {
                         password_match = 1;
@@ -314,7 +318,7 @@ void* process_transaction(void* arg) {
                 src_account->transaction_tracter += atof(amount);
                 pthread_mutex_unlock(&src_account->ac_lock);
             } else {
-                printf("D Error: invalid account info.\n");
+                //printf("D Error: invalid account info.\n");
             }
         }
         // if transaction is withdraw
@@ -328,7 +332,7 @@ void* process_transaction(void* arg) {
                     src_account = &account_list[i];
                     src_found = 1;
                     if (strncmp(account_list[i].password, password, 9) != 0) {
-                        printf("Error: invalid password, account number: %s\n", src_account_number);
+                        //printf("Error: invalid password, account number: %s\n", src_account_number);
                         break;
                     } else {
                         password_match = 1;
@@ -342,21 +346,23 @@ void* process_transaction(void* arg) {
                 src_account->transaction_tracter += atof(amount);
                 pthread_mutex_unlock(&src_account->ac_lock);
             } else {
-                printf("W Error: invalid account info.\n");
+                //printf("W Error: invalid account info.\n");
             }
         }
         // else invalid transaction
         else {
-            printf("Error: Transaction type is invalid.\n");
+            //printf("Error: Transaction type is invalid.\n");
         }
         current_transaction++;
     }
+    printf("Worker Thread : %lu exited\n", pthread_self());
     pthread_exit(NULL);
 
     return NULL;
 }
 
 void* update_balance(void* arg) {
+    printf("Bank : updating balances\n");
     for (int i = 0; i < number_of_accounts; i++) {
         account_list[i].balance += 
             account_list[i].transaction_tracter * account_list[i].reward_rate;

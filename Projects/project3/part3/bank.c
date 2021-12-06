@@ -192,7 +192,7 @@ void* read_transactions(char*** input_lines) {
     command_line** split_transactions = malloc(sizeof(command_line*) * NUM_THREADS);
 
     // populate split_transactions giving each thread the same amount of threads each. 
-    while (lines[current_line] != NULL) {
+    while (current_line < total_lines) {
         if (transaction_line == 0) {
             split_transactions[current_thread] = malloc (sizeof(command_line) * num_transactions_per_thread);
             transaction_line++;
@@ -273,7 +273,7 @@ void* process_transaction(void* arg) {
     pthread_barrier_wait(&sync_barrier);
     printf("Worker Thread : %lu started working\n", pthread_self());
     
-    while (transactions[current_transaction].command_list != NULL && current_transaction < num_transactions_per_thread) {
+    while (current_transaction < num_transactions_per_thread && transactions[current_transaction].command_list != NULL) {
         // Reset variables
         src_account = NULL;
         dest_account = NULL;

@@ -1,26 +1,8 @@
-==5100== Memcheck, a memory error detector
-==5100== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
-==5100== Using Valgrind-3.13.0 and LibVEX; rerun with -h for copyright info
-==5100== Command: ./bank ../input-1.txt
-==5100== 
-==5100== Invalid read of size 8
-==5100==    at 0x109C3A: read_transactions (bank.c:206)
-==5100==    by 0x109296: main (bank.c:42)
-==5100==  Address 0x58d7f38 is 0 bytes after a block of size 960,408 alloc'd
-==5100==    at 0x4C31B0F: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==5100==    by 0x109444: read_input_file (bank.c:90)
-==5100==    by 0x109274: main (bank.c:36)
-==5100== 
-==5100== Thread 7:
-==5100== Invalid read of size 8
-==5100==    at 0x10A864: process_transaction (bank.c:287)
-==5100==    by 0x4E456DA: start_thread (pthread_create.c:463)
-==5100==    by 0x551C71E: clone (clone.S:95)
-==5100==  Address 0x899b560 is 0 bytes after a block of size 192,000 alloc'd
-==5100==    at 0x4C31B0F: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==5100==    by 0x109B9D: read_transactions (bank.c:208)
-==5100==    by 0x109296: main (bank.c:42)
-==5100== 
+==6453== Memcheck, a memory error detector
+==6453== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==6453== Using Valgrind-3.13.0 and LibVEX; rerun with -h for copyright info
+==6453== Command: ./bank ../input-1.txt
+==6453== 
 Worker Thread : 192857856 created but waiting
 Worker Thread : 201250560 created but waiting
 Worker Thread : 209643264 created but waiting
@@ -28,183 +10,206 @@ Worker Thread : 218035968 created but waiting
 Worker Thread : 226428672 created but waiting
 Worker Thread : 234821376 created but waiting
 Worker Thread : 243214080 created but waiting
+Bank Thread : 276784896 created but waiting
 Worker Thread : 251606784 created but waiting
 Worker Thread : 259999488 created but waiting
 Worker Thread : 268392192 created but waiting
-Bank Thread : 276784896 created but waiting
+Worker Thread : 268392192 started working
+Worker Thread : 192857856 started working
+Worker Thread : 251606784 started working
+Worker Thread : 259999488 started working
+Worker Thread : 226428672 started working
+Worker Thread : 209643264 started working
+Worker Thread : 243214080 started working
+Worker Thread : 234821376 started working
+Worker Thread : 218035968 started working
 Worker Thread : 201250560 started working
 Bank Thread : 276784896 started working
-Worker Thread : 251606784 started working
-Worker Thread : 268392192 started working
-Worker Thread : 259999488 started working
-Worker Thread : 243214080 started working
-Worker Thread : 209643264 started working
-Worker Thread : 234821376 started working
-Worker Thread : 234821376 waiting, counter reached 5000
-Worker Thread : 218035968 started working
-Worker Thread : 218035968 waiting, counter reached 5000
-Worker Thread : 192857856 started working
-Worker Thread : 192857856 waiting, counter reached 5000
-Worker Thread : 226428672 started working
-Worker Thread : 226428672 waiting, counter reached 5000
-Worker Thread : 251606784 waiting, counter reached 5000
-Worker Thread : 268392192 waiting, counter reached 5000
 Worker Thread : 259999488 waiting, counter reached 5000
-Worker Thread : 201250560 waiting, counter reached 5000
-Worker Thread : 243214080 waiting, counter reached 5000
+Worker Thread : 226428672 waiting, counter reached 5000
 Worker Thread : 209643264 waiting, counter reached 5000
+Worker Thread : 243214080 waiting, counter reached 5000
+Worker Thread : 234821376 waiting, counter reached 5000
+Worker Thread : 218035968 waiting, counter reached 5000
+Worker Thread : 201250560 waiting, counter reached 5000
+Worker Thread : 251606784 waiting, counter reached 5000
+Worker Thread : 192857856 waiting, counter reached 5000
+Worker Thread : 268392192 waiting, counter reached 5000
 Bank Thread : 276784896 Updated time #1
 Bank Thread : 276784896 resuming worker threads.
-Worker Thread : 234821376 exited, #transactions fulfilled: 12000
-Worker Thread : 243214080 waiting, counter reached 5000
 Worker Thread : 259999488 waiting, counter reached 5000
-Worker Thread : 251606784 waiting, counter reached 5000
-Worker Thread : 268392192 waiting, counter reached 5000
-Worker Thread : 218035968 waiting, counter reached 5000
+Worker Thread : 243214080 waiting, counter reached 5000
+Worker Thread : 234821376 waiting, counter reached 5000
+Worker Thread : 201250560 waiting, counter reached 5000
 Worker Thread : 209643264 waiting, counter reached 5000
 Worker Thread : 192857856 waiting, counter reached 5000
+Worker Thread : 218035968 waiting, counter reached 5000
 Worker Thread : 226428672 waiting, counter reached 5000
-Worker Thread : 201250560 waiting, counter reached 5000
+Worker Thread : 251606784 waiting, counter reached 5000
+Worker Thread : 268392192 waiting, counter reached 5000
 Bank Thread : 276784896 Updated time #2
 Bank Thread : 276784896 resuming worker threads.
-Worker Thread : 251606784 waiting, counter reached 5000
-Worker Thread : 192857856 waiting, counter reached 5000
+Worker Thread : 201250560 waiting, counter reached 5000
+Worker Thread : 226428672 waiting, counter reached 5000
+Worker Thread : 234821376 waiting, counter reached 5000
 Worker Thread : 218035968 waiting, counter reached 5000
-Worker Thread : 259999488 waiting, counter reached 5000
+Worker Thread : 192857856 waiting, counter reached 5000
+Worker Thread : 251606784 waiting, counter reached 5000
 Worker Thread : 209643264 waiting, counter reached 5000
 Worker Thread : 243214080 waiting, counter reached 5000
+Worker Thread : 259999488 waiting, counter reached 5000
 Worker Thread : 268392192 waiting, counter reached 5000
-Worker Thread : 226428672 waiting, counter reached 5000
-Worker Thread : 201250560 waiting, counter reached 5000
 Bank Thread : 276784896 Updated time #3
 Bank Thread : 276784896 resuming worker threads.
-Worker Thread : 218035968 waiting, counter reached 5000
-Worker Thread : 259999488 waiting, counter reached 5000
-Worker Thread : 243214080 waiting, counter reached 5000
 Worker Thread : 209643264 waiting, counter reached 5000
-Worker Thread : 192857856 waiting, counter reached 5000
+Worker Thread : 218035968 waiting, counter reached 5000
 Worker Thread : 201250560 waiting, counter reached 5000
-Worker Thread : 226428672 waiting, counter reached 5000
-Worker Thread : 268392192 waiting, counter reached 5000
+Worker Thread : 234821376 waiting, counter reached 5000
+Worker Thread : 192857856 waiting, counter reached 5000
 Worker Thread : 251606784 waiting, counter reached 5000
+Worker Thread : 226428672 waiting, counter reached 5000
+Worker Thread : 243214080 waiting, counter reached 5000
+Worker Thread : 259999488 waiting, counter reached 5000
+Worker Thread : 268392192 waiting, counter reached 5000
 Bank Thread : 276784896 Updated time #4
 Bank Thread : 276784896 resuming worker threads.
-Worker Thread : 268392192 waiting, counter reached 5000
-Worker Thread : 226428672 waiting, counter reached 5000
-Worker Thread : 251606784 waiting, counter reached 5000
-Worker Thread : 218035968 waiting, counter reached 5000
-Worker Thread : 201250560 waiting, counter reached 5000
-Worker Thread : 209643264 waiting, counter reached 5000
 Worker Thread : 243214080 waiting, counter reached 5000
-Worker Thread : 259999488 waiting, counter reached 5000
+Worker Thread : 251606784 waiting, counter reached 5000
+Worker Thread : 201250560 waiting, counter reached 5000
 Worker Thread : 192857856 waiting, counter reached 5000
+Worker Thread : 259999488 waiting, counter reached 5000
+Worker Thread : 226428672 waiting, counter reached 5000
+Worker Thread : 268392192 waiting, counter reached 5000
+Worker Thread : 209643264 waiting, counter reached 5000
+Worker Thread : 234821376 waiting, counter reached 5000
+Worker Thread : 218035968 waiting, counter reached 5000
 Bank Thread : 276784896 Updated time #5
 Bank Thread : 276784896 resuming worker threads.
-Worker Thread : 218035968 waiting, counter reached 5000
-Worker Thread : 201250560 waiting, counter reached 5000
-Worker Thread : 192857856 waiting, counter reached 5000
-Worker Thread : 251606784 waiting, counter reached 5000
-Worker Thread : 268392192 waiting, counter reached 5000
+Worker Thread : 201250560 exited, #transactions fulfilled: 12000
 Worker Thread : 259999488 waiting, counter reached 5000
-Worker Thread : 243214080 waiting, counter reached 5000
-Worker Thread : 209643264 waiting, counter reached 5000
 Worker Thread : 226428672 waiting, counter reached 5000
+Worker Thread : 192857856 waiting, counter reached 5000
+Worker Thread : 209643264 waiting, counter reached 5000
+Worker Thread : 268392192 waiting, counter reached 5000
+Worker Thread : 251606784 waiting, counter reached 5000
+Worker Thread : 243214080 waiting, counter reached 5000
+Worker Thread : 234821376 waiting, counter reached 5000
+Worker Thread : 218035968 waiting, counter reached 5000
 Bank Thread : 276784896 Updated time #6
 Bank Thread : 276784896 resuming worker threads.
-Worker Thread : 268392192 exited, #transactions fulfilled: 12000
-Worker Thread : 209643264 waiting, counter reached 5000
-Worker Thread : 251606784 waiting, counter reached 5000
-Worker Thread : 218035968 waiting, counter reached 5000
-Worker Thread : 201250560 waiting, counter reached 5000
-Worker Thread : 192857856 waiting, counter reached 5000
 Worker Thread : 259999488 waiting, counter reached 5000
-Worker Thread : 226428672 waiting, counter reached 5000
+Worker Thread : 192857856 waiting, counter reached 5000
+Worker Thread : 268392192 waiting, counter reached 5000
+Worker Thread : 209643264 waiting, counter reached 5000
+Worker Thread : 234821376 waiting, counter reached 5000
 Worker Thread : 243214080 waiting, counter reached 5000
+Worker Thread : 218035968 waiting, counter reached 5000
+Worker Thread : 251606784 waiting, counter reached 5000
+Worker Thread : 226428672 waiting, counter reached 5000
 Bank Thread : 276784896 Updated time #7
 Bank Thread : 276784896 resuming worker threads.
-Worker Thread : 251606784 exited, #transactions fulfilled: 12000
-Worker Thread : 218035968 exited, #transactions fulfilled: 12000
+Worker Thread : 234821376 waiting, counter reached 5000
+Worker Thread : 268392192 waiting, counter reached 5000
+Worker Thread : 243214080 waiting, counter reached 5000
+Worker Thread : 218035968 waiting, counter reached 5000
+Worker Thread : 192857856 waiting, counter reached 5000
+Worker Thread : 251606784 waiting, counter reached 5000
 Worker Thread : 226428672 waiting, counter reached 5000
 Worker Thread : 259999488 waiting, counter reached 5000
-Worker Thread : 243214080 waiting, counter reached 5000
-Worker Thread : 192857856 waiting, counter reached 5000
-Worker Thread : 201250560 waiting, counter reached 5000
 Worker Thread : 209643264 waiting, counter reached 5000
 Bank Thread : 276784896 Updated time #8
 Bank Thread : 276784896 resuming worker threads.
-Worker Thread : 259999488 waiting, counter reached 5000
+Worker Thread : 268392192 waiting, counter reached 5000
 Worker Thread : 243214080 waiting, counter reached 5000
-Worker Thread : 209643264 waiting, counter reached 5000
+Worker Thread : 259999488 waiting, counter reached 5000
+Worker Thread : 234821376 waiting, counter reached 5000
 Worker Thread : 226428672 waiting, counter reached 5000
-Worker Thread : 201250560 waiting, counter reached 5000
+Worker Thread : 251606784 waiting, counter reached 5000
 Worker Thread : 192857856 waiting, counter reached 5000
+Worker Thread : 218035968 waiting, counter reached 5000
+Worker Thread : 209643264 waiting, counter reached 5000
 Bank Thread : 276784896 Updated time #9
 Bank Thread : 276784896 resuming worker threads.
-Worker Thread : 243214080 waiting, counter reached 5000
+Worker Thread : 251606784 waiting, counter reached 5000
 Worker Thread : 192857856 waiting, counter reached 5000
-Worker Thread : 209643264 waiting, counter reached 5000
 Worker Thread : 226428672 waiting, counter reached 5000
-Worker Thread : 201250560 waiting, counter reached 5000
+Worker Thread : 209643264 waiting, counter reached 5000
+Worker Thread : 268392192 waiting, counter reached 5000
+Worker Thread : 218035968 waiting, counter reached 5000
+Worker Thread : 243214080 waiting, counter reached 5000
 Worker Thread : 259999488 waiting, counter reached 5000
+Worker Thread : 234821376 waiting, counter reached 5000
 Bank Thread : 276784896 Updated time #10
 Bank Thread : 276784896 resuming worker threads.
+Worker Thread : 268392192 exited, #transactions fulfilled: 12000
+Worker Thread : 259999488 waiting, counter reached 5000
 Worker Thread : 226428672 waiting, counter reached 5000
 Worker Thread : 209643264 waiting, counter reached 5000
-Worker Thread : 243214080 waiting, counter reached 5000
-Worker Thread : 201250560 waiting, counter reached 5000
+Worker Thread : 218035968 waiting, counter reached 5000
+Worker Thread : 251606784 waiting, counter reached 5000
 Worker Thread : 192857856 waiting, counter reached 5000
-Worker Thread : 259999488 waiting, counter reached 5000
+Worker Thread : 243214080 waiting, counter reached 5000
+Worker Thread : 234821376 waiting, counter reached 5000
 Bank Thread : 276784896 Updated time #11
 Bank Thread : 276784896 resuming worker threads.
-Worker Thread : 259999488 exited, #transactions fulfilled: 12000
-Worker Thread : 243214080 waiting, counter reached 5000
-Worker Thread : 192857856 waiting, counter reached 5000
+Worker Thread : 209643264 exited, #transactions fulfilled: 12000
+Worker Thread : 218035968 waiting, counter reached 5000
+Worker Thread : 234821376 waiting, counter reached 5000
 Worker Thread : 226428672 waiting, counter reached 5000
-Worker Thread : 201250560 waiting, counter reached 5000
-Worker Thread : 209643264 waiting, counter reached 5000
+Worker Thread : 259999488 waiting, counter reached 5000
+Worker Thread : 251606784 waiting, counter reached 5000
+Worker Thread : 192857856 waiting, counter reached 5000
+Worker Thread : 243214080 waiting, counter reached 5000
 Bank Thread : 276784896 Updated time #12
 Bank Thread : 276784896 resuming worker threads.
-Worker Thread : 192857856 waiting, counter reached 5000
+Worker Thread : 259999488 exited, #transactions fulfilled: 12000
 Worker Thread : 226428672 waiting, counter reached 5000
+Worker Thread : 251606784 waiting, counter reached 5000
+Worker Thread : 234821376 waiting, counter reached 5000
+Worker Thread : 218035968 waiting, counter reached 5000
+Worker Thread : 192857856 waiting, counter reached 5000
 Worker Thread : 243214080 waiting, counter reached 5000
-Worker Thread : 201250560 waiting, counter reached 5000
-Worker Thread : 209643264 waiting, counter reached 5000
 Bank Thread : 276784896 Updated time #13
 Bank Thread : 276784896 resuming worker threads.
-Worker Thread : 209643264 waiting, counter reached 5000
 Worker Thread : 192857856 waiting, counter reached 5000
-Worker Thread : 226428672 waiting, counter reached 5000
-Worker Thread : 201250560 waiting, counter reached 5000
 Worker Thread : 243214080 waiting, counter reached 5000
+Worker Thread : 218035968 waiting, counter reached 5000
+Worker Thread : 251606784 waiting, counter reached 5000
+Worker Thread : 226428672 waiting, counter reached 5000
+Worker Thread : 234821376 waiting, counter reached 5000
 Bank Thread : 276784896 Updated time #14
 Bank Thread : 276784896 resuming worker threads.
-Worker Thread : 243214080 exited, #transactions fulfilled: 12000
-Worker Thread : 201250560 waiting, counter reached 5000
+Worker Thread : 192857856 exited, #transactions fulfilled: 12000
+Worker Thread : 251606784 waiting, counter reached 5000
 Worker Thread : 226428672 waiting, counter reached 5000
-Worker Thread : 192857856 waiting, counter reached 5000
-Worker Thread : 209643264 waiting, counter reached 5000
+Worker Thread : 243214080 waiting, counter reached 5000
+Worker Thread : 218035968 waiting, counter reached 5000
+Worker Thread : 234821376 waiting, counter reached 5000
 Bank Thread : 276784896 Updated time #15
 Bank Thread : 276784896 resuming worker threads.
 Worker Thread : 226428672 exited, #transactions fulfilled: 12000
-Worker Thread : 201250560 waiting, counter reached 5000
-Worker Thread : 209643264 waiting, counter reached 5000
-Worker Thread : 192857856 waiting, counter reached 5000
+Worker Thread : 234821376 waiting, counter reached 5000
+Worker Thread : 251606784 waiting, counter reached 5000
+Worker Thread : 243214080 waiting, counter reached 5000
+Worker Thread : 218035968 waiting, counter reached 5000
 Bank Thread : 276784896 Updated time #16
 Bank Thread : 276784896 resuming worker threads.
-Worker Thread : 209643264 exited, #transactions fulfilled: 12000
-Worker Thread : 192857856 waiting, counter reached 5000
-Worker Thread : 201250560 waiting, counter reached 5000
+Worker Thread : 234821376 exited, #transactions fulfilled: 12000
+Worker Thread : 218035968 waiting, counter reached 5000
+Worker Thread : 243214080 waiting, counter reached 5000
+Worker Thread : 251606784 waiting, counter reached 5000
 Bank Thread : 276784896 Updated time #17
 Bank Thread : 276784896 resuming worker threads.
-Worker Thread : 201250560 exited, #transactions fulfilled: 12000
-Worker Thread : 192857856 exited, #transactions fulfilled: 12000
+Worker Thread : 251606784 exited, #transactions fulfilled: 12000
+Worker Thread : 218035968 exited, #transactions fulfilled: 12000
+Worker Thread : 243214080 exited, #transactions fulfilled: 12000
 Bank Thread : 276784896 Updated 18 times
-==5100== 
-==5100== HEAP SUMMARY:
-==5100==     in use at exit: 0 bytes in 0 blocks
-==5100==   total heap usage: 880,610 allocs, 880,610 frees, 24,593,553 bytes allocated
-==5100== 
-==5100== All heap blocks were freed -- no leaks are possible
-==5100== 
-==5100== For counts of detected and suppressed errors, rerun with: -v
-==5100== ERROR SUMMARY: 11 errors from 2 contexts (suppressed: 0 from 0)
+==6453== 
+==6453== HEAP SUMMARY:
+==6453==     in use at exit: 0 bytes in 0 blocks
+==6453==   total heap usage: 880,610 allocs, 880,610 frees, 24,593,553 bytes allocated
+==6453== 
+==6453== All heap blocks were freed -- no leaks are possible
+==6453== 
+==6453== For counts of detected and suppressed errors, rerun with: -v
+==6453== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
