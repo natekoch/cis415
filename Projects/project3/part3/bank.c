@@ -38,8 +38,6 @@ int main(int argc, char *argv[]) {
     create_output_directory();
 
     read_transactions(&input_lines);
-    
-    update_account_files();
 
     create_output_file();
 
@@ -459,8 +457,9 @@ void* update_balance(void* arg) {
     printf("Bank Thread : %lu created but waiting\n", pthread_self());
     pthread_barrier_wait(&sync_barrier);
     printf("Bank Thread : %lu started working\n", pthread_self());
+    int update_times = 0;
     while (1) {
-        if (waiting_thread_count == alive_thread_count) {
+        if (waiting_thread_count == alive_thread_count || alive_thread_count == 0) {
             pthread_mutex_lock(&mtx);
             for (int i = 0; i < number_of_accounts; i++) {
                 pthread_mutex_lock(&account_list[i].ac_lock);
@@ -468,17 +467,22 @@ void* update_balance(void* arg) {
                     account_list[i].transaction_tracter * account_list[i].reward_rate;
                 pthread_mutex_unlock(&account_list[i].ac_lock);
             }
+            update_times++;
             update_account_files();
-            counter = 0;
-            waiting_thread_count = 0;
-            printf("Bank Thread : %lu resuming worker threads.\n", pthread_self());
-            pthread_cond_broadcast(&condition);
-
+            if (alive_thread_count == 0) {
+                printf("Bank Thread : %lu Updated %d times\n", pthread_self(), update_times);
+                break;
+            } else {
+                printf("Bank Thread : %lu Updated time #%d\n", pthread_self(), update_times);
+                printf("Bank Thread : %lu resuming worker threads.\n", pthread_self());
+                waiting_thread_count = 0;
+                counter = 0;
+                pthread_cond_broadcast(&condition);
+            }
             pthread_mutex_unlock(&mtx);
         } else {
             sched_yield();
         }
-        if (alive_thread_count == 0) break;
     }
     pthread_exit(NULL);
     return NULL;
