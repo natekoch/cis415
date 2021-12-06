@@ -18,6 +18,8 @@ int counter = 0;
 int waiting_thread_count = 0;
 int alive_thread_count = 0;
 
+double num_transactions_per_thread = 0;
+
 pthread_barrier_t sync_barrier;
 
 pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER; // lock for conditional wake up
@@ -75,7 +77,6 @@ void* read_input_file(int num_args, char** arg_list, char*** lines) {
     char* stripped_line;
 
     // loop through file
-    /*
     while (getline(&line_buf, &len, FPin) != -1) {
         total_lines++;
     }
@@ -86,21 +87,12 @@ void* read_input_file(int num_args, char** arg_list, char*** lines) {
         perror("fopen: ");
         exit(-1);
     }
-    *lines = malloc(sizeof(char*) * total_lines);
+    lines[0] = malloc(sizeof(char*) * total_lines);
     while (getline (&line_buf, &len, FPin) != -1) {
-        *lines[line_number] = strdup(line_buf);
-        line_number++;
-    }
-    */
-    *lines = malloc(sizeof(char*));
-    while (getline (&line_buf, &len, FPin) != -1) {
-        if (line_number != 0) {
-            *lines = realloc(*lines, (line_number + 1) * sizeof(char *));
-        }
         lines[0][line_number] = strdup(line_buf);
         line_number++;
-        total_lines++;
     }
+    free(line_buf);
     if (FPin) fclose(FPin);
 
     return NULL;
@@ -195,7 +187,7 @@ void* read_transactions(char*** input_lines) {
     int start_line = number_of_accounts*5+1;
     int current_line = start_line;
     int transaction_line = 0;
-    double num_transactions_per_thread = ceil(num_transactions/NUM_THREADS);
+    num_transactions_per_thread = ceil(num_transactions/NUM_THREADS);
     int error;
     command_line** split_transactions = malloc(sizeof(command_line*) * NUM_THREADS);
 
@@ -281,7 +273,7 @@ void* process_transaction(void* arg) {
     pthread_barrier_wait(&sync_barrier);
     printf("Worker Thread : %lu started working\n", pthread_self());
     
-    while (transactions[current_transaction].command_list != NULL) {
+    while (transactions[current_transaction].command_list != NULL && current_transaction < num_transactions_per_thread) {
         // Reset variables
         src_account = NULL;
         dest_account = NULL;
@@ -439,15 +431,11 @@ void* process_transaction(void* arg) {
             pthread_cond_wait(&condition, &mtx);
             pthread_mutex_unlock(&mtx);
         }
-        /*
-        pthread_mutex_lock(&lock_counter);
-        printf("%d\n", counter);
-        pthread_mutex_unlock(&lock_counter);
-        */
     }
     pthread_mutex_lock(&lock_alive);
     alive_thread_count--;
     pthread_mutex_unlock(&lock_alive);
+    printf("Worker Thread : %lu exited, #transactions fulfilled: %d\n", pthread_self(), current_transaction);
     pthread_exit(NULL);
 
     return NULL;

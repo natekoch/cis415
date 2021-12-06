@@ -59,7 +59,6 @@ void* read_input_file(int num_args, char** arg_list, char*** lines) {
     char* stripped_line;
 
     // loop through file
-    /*
     while (getline(&line_buf, &len, FPin) != -1) {
         total_lines++;
     }
@@ -70,21 +69,12 @@ void* read_input_file(int num_args, char** arg_list, char*** lines) {
         perror("fopen: ");
         exit(-1);
     }
-    *lines = malloc(sizeof(char*) * total_lines);
+    lines[0] = malloc(sizeof(char*) * total_lines);
     while (getline (&line_buf, &len, FPin) != -1) {
-        *lines[line_number] = strdup(line_buf);
-        line_number++;
-    }
-    */
-    *lines = malloc(sizeof(char*));
-    while (getline (&line_buf, &len, FPin) != -1) {
-        if (line_number != 0) {
-            *lines = realloc(*lines, (line_number + 1) * sizeof(char *));
-        }
         lines[0][line_number] = strdup(line_buf);
         line_number++;
-        total_lines++;
     }
+    free(line_buf);
     if (FPin) fclose(FPin);
 
     return NULL;
